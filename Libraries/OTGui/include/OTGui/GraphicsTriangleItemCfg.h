@@ -7,16 +7,17 @@
 #pragma once
 
 // OpenTwin header
+#include "OTGui/Outline.h"
 #include "OTGui/GraphicsItemCfg.h"
 #include "OTCore/OTClassHelper.h"
 
-#define OT_SimpleFactoryJsonKeyValue_GraphicsTriangleItemCfg "OT_GICTria"
+#define OT_FactoryKey_GraphicsTriangleItem "OT_GITria"
 
 namespace ot {
 
 	class Painter2D;
 
-	class OT_GUI_API_EXPORTONLY GraphicsTriangleItemCfg : public ot::GraphicsItemCfg {
+	class OT_GUI_API_EXPORT GraphicsTriangleItemCfg : public ot::GraphicsItemCfg {
 		OT_DECL_NOCOPY(GraphicsTriangleItemCfg)
 	public:
 		enum TriangleDirection {
@@ -41,6 +42,9 @@ namespace ot {
 		GraphicsTriangleItemCfg(TriangleDirection _direction = Right, TriangleShape _shape = Triangle);
 		virtual ~GraphicsTriangleItemCfg();
 
+		//! \brief Creates a copy of this item.
+		virtual GraphicsItemCfg* createCopy(void) const override;
+
 		//! @brief Add the object contents to the provided JSON object
 		//! @param _document The JSON document (used to get the allocator)
 		//! @param _object The JSON object to add the contents to
@@ -52,10 +56,10 @@ namespace ot {
 		virtual void setFromJsonObject(const ConstJsonObject& _object) override;
 
 		//! @brief Returns the key that is used to create an instance of this class in the simple factory
-		virtual std::string simpleFactoryObjectKey(void) const override { return std::string(OT_SimpleFactoryJsonKeyValue_GraphicsTriangleItemCfg); };
+		virtual std::string getFactoryKey(void) const override { return std::string(OT_FactoryKey_GraphicsTriangleItem); };
 
-		void setOutline(const ot::Border& _outline) { m_outline = _outline; };
-		const ot::Border& outline(void) const { return m_outline; };
+		void setOutline(const ot::OutlineF& _outline) { m_outline = _outline; };
+		const ot::OutlineF& outline(void) const { return m_outline; };
 
 		void setBackgroundPainer(ot::Painter2D* _painter);
 		ot::Painter2D* backgroundPainter(void) { return m_backgroundPainter; };
@@ -70,7 +74,7 @@ namespace ot {
 		TriangleDirection triangleDirection(void) const { return m_direction; };
 
 	private:
-		ot::Border m_outline;
+		ot::OutlineF m_outline;
 		ot::Size2DD m_size;
 		ot::Painter2D* m_backgroundPainter;
 		TriangleDirection m_direction;

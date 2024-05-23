@@ -9,14 +9,14 @@
 #include "OTCore/Color.h"
 #include "OTGui/Painter2D.h"
 
-#define OT_SimpleFactoryJsonKeyValue_FillPainter2DCfg "OT_P2DCFill"
+#define OT_FactoryKey_FillPainter2D "OT_P2DFill"
 
 namespace ot {
 	
 	class OT_GUI_API_EXPORT FillPainter2D : public ot::Painter2D {
 	public:
 		FillPainter2D();
-		FillPainter2D(ot::Color::DefaultColor _color);
+		FillPainter2D(ot::DefaultColor _color);
 		FillPainter2D(const ot::Color& _color);
 		virtual ~FillPainter2D();
 
@@ -31,13 +31,13 @@ namespace ot {
 		virtual void setFromJsonObject(const ConstJsonObject& _object) override;
 
 		//! @brief Returns the key that is used to create an instance of this class in the simple factory
-		virtual std::string simpleFactoryObjectKey(void) const override { return std::string(OT_SimpleFactoryJsonKeyValue_FillPainter2DCfg); };
+		virtual std::string getFactoryKey(void) const override { return std::string(OT_FactoryKey_FillPainter2D); };
 
 		virtual std::string generateQss(void) const override;
 
 		virtual ot::Color getDefaultColor(void) const override;
 
-		void setColor(ot::Color& _color) { m_color = _color; };
+		void setColor(const ot::Color& _color) { m_color = _color; };
 		const ot::Color& color(void) const { return m_color; };
 
 	private:

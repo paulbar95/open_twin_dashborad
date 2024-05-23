@@ -28,15 +28,15 @@ Application* g_instance{ nullptr };
 #include "OTGui/PropertyDialogCfg.h"
 #include "OTGui/OnePropertyDialogCfg.h"
 #include "OTGui/PropertyPainter2D.h"
-#include "OTCore/PropertyGroup.h"
-#include "OTCore/PropertyBool.h"
-#include "OTCore/PropertyColor.h"
-#include "OTCore/PropertyInt.h"
-#include "OTCore/PropertyDouble.h"
-#include "OTCore/PropertyString.h"
-#include "OTCore/PropertyStringList.h"
-#include "OTCore/PropertyFilePath.h"
-#include "OTCore/PropertyDirectory.h"
+#include "OTGui/PropertyGroup.h"
+#include "OTGui/PropertyBool.h"
+#include "OTGui/PropertyColor.h"
+#include "OTGui/PropertyInt.h"
+#include "OTGui/PropertyDouble.h"
+#include "OTGui/PropertyString.h"
+#include "OTGui/PropertyStringList.h"
+#include "OTGui/PropertyFilePath.h"
+#include "OTGui/PropertyDirectory.h"
 
 std::string Application::test(void) {
 	ot::JsonDocument doc;
@@ -219,7 +219,7 @@ std::string Application::handleOnePropertyDialogValue(ot::JsonDocument& _documen
 		ot::ConstJsonObject value = ot::json::getObject(_document, OT_ACTION_PARAM_Value);
 		ot::Color c;
 		c.setFromJsonObject(value);
-		m_uiComponent->displayMessage(std::string("Dialog test resulted with value: ") + std::to_string(c.rInt()) + ", " + std::to_string(c.gInt()) + ", " + std::to_string(c.bInt()) + ", " + std::to_string(c.aInt()) + "\n");
+		m_uiComponent->displayMessage(std::string("Dialog test resulted with value: ") + std::to_string(c.r()) + ", " + std::to_string(c.g()) + ", " + std::to_string(c.b()) + ", " + std::to_string(c.a()) + "\n");
 	}
 	else if (dialogName == "MyFileDialog") {
 

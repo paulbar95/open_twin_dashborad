@@ -22,6 +22,7 @@
 
 #include "OTGui/Painter2D.h"
 #include "OTGui/FillPainter2D.h"
+#include "OTGui/Painter2DFactory.h"
 #include "OTGui/LinearGradientPainter2D.h"
 #include "OTGui/RadialGradientPainter2D.h"
 
@@ -112,7 +113,7 @@ ot::GraphicsItemCfg* ot::GraphicsFlowItemConnector::createSquareItem(void) {
 	itm->setSize(ot::Size2DD(10., 10.));
 	itm->setMaximumSize(ot::Size2DD(10., 10.));
 	itm->setMinimumSize(ot::Size2DD(10., 10.));
-	itm->setBorder(ot::Border(m_secondaryColor, 1));
+	itm->setOutline(ot::OutlineF(1., m_secondaryColor));
 
 	return itm;
 }
@@ -121,7 +122,7 @@ ot::GraphicsItemCfg* ot::GraphicsFlowItemConnector::createCircleItem(void) {
 	ot::GraphicsEllipseItemCfg* itm = new ot::GraphicsEllipseItemCfg(5, 5, new ot::FillPainter2D(m_primaryColor));
 	itm->setMaximumSize(ot::Size2DD(10., 10.));
 	itm->setMinimumSize(ot::Size2DD(10., 10.));
-	itm->setBorder(ot::Border(m_secondaryColor, 1));
+	itm->setOutline(ot::OutlineF(1., m_secondaryColor));
 
 	return itm;
 }
@@ -131,7 +132,7 @@ ot::GraphicsItemCfg* ot::GraphicsFlowItemConnector::createTriangleItem(GraphicsT
 	itm->setBackgroundPainer(new ot::FillPainter2D(m_primaryColor));
 	itm->setMaximumSize(ot::Size2DD(10., 10.));
 	itm->setMinimumSize(ot::Size2DD(10., 10.));
-	itm->setOutline(ot::Border(m_secondaryColor, 1));
+	itm->setOutline(ot::OutlineF(1., m_secondaryColor));
 
 	return itm;
 }
@@ -158,18 +159,15 @@ ot::GraphicsItemCfg* ot::GraphicsFlowItemBuilder::createGraphicsItem() const {
 	try {
 		JsonDocument backDoc;
 		m_backgroundPainter->addToJsonObject(backDoc, backDoc.GetAllocator());
-		painterBack = ot::SimpleFactory::instance().createType<ot::Painter2D>(backDoc.constRef().GetObject());
-		painterBack->setFromJsonObject(backDoc.constRef().GetObject());
+		painterBack = Painter2DFactory::instance().create(backDoc.GetConstObject());
 
 		JsonDocument titleBackDoc;
 		m_titleBackgroundPainter->addToJsonObject(titleBackDoc, titleBackDoc.GetAllocator());
-		painterTitleBack = ot::SimpleFactory::instance().createType<ot::Painter2D>(titleBackDoc.constRef().GetObject());
-		painterTitleBack->setFromJsonObject(titleBackDoc.constRef().GetObject());
-
+		painterTitleBack = Painter2DFactory::instance().create(titleBackDoc.GetConstObject());
+		
 		JsonDocument titleFrontDoc;
 		m_titleForegroundPainter->addToJsonObject(titleFrontDoc, titleFrontDoc.GetAllocator());
-		painterTitleFront = ot::SimpleFactory::instance().createType<ot::Painter2D>(titleFrontDoc.constRef().GetObject());
-		painterTitleFront->setFromJsonObject(titleFrontDoc.constRef().GetObject());
+		painterTitleFront = Painter2DFactory::instance().create(titleFrontDoc.GetConstObject());
 	}
 	catch (const std::exception& _e) {
 		OT_LOG_EAS(_e.what());
@@ -184,6 +182,7 @@ ot::GraphicsItemCfg* ot::GraphicsFlowItemBuilder::createGraphicsItem() const {
 		if (painterTitleFront) delete painterTitleFront;
 		return nullptr;
 	}
+
 	OTAssertNullptr(painterBack);
 	OTAssertNullptr(painterTitleBack);
 	OTAssertNullptr(painterTitleFront);
@@ -199,7 +198,7 @@ ot::GraphicsItemCfg* ot::GraphicsFlowItemBuilder::createGraphicsItem() const {
 
 	// Border
 	ot::GraphicsRectangularItemCfg* bor = new ot::GraphicsRectangularItemCfg(painterBack);
-	bor->setBorder(ot::Border(ot::Color(0, 0, 0), 1));
+	bor->setOutline(ot::OutlineF(1., ot::Color(0, 0, 0)));
 	bor->setCornerRadius(5);
 	bor->setName(m_name + "_bor");
 	bor->setSizePolicy(ot::Dynamic);
@@ -221,7 +220,7 @@ ot::GraphicsItemCfg* ot::GraphicsFlowItemBuilder::createGraphicsItem() const {
 
 	// Title: Border
 	ot::GraphicsRectangularItemCfg* tBor = new ot::GraphicsRectangularItemCfg(painterTitleBack);
-	tBor->setBorder(ot::Border(ot::Color(0, 0, 0), 1));
+	tBor->setOutline(OutlineF(1., ot::Color(0, 0, 0)));
 	tBor->setName(m_name + "_tBor");
 	tBor->setCornerRadius(5);
 	//tBor->setSize(ot::Size2DD(200., 30.));
@@ -366,9 +365,9 @@ ot::GraphicsFlowItemBuilder::GraphicsFlowItemBuilder()
 	this->setTitleBackgroundColor(ot::Color(70, 70, 70));
 	this->setDefaultTitleForegroundGradient();
 
-	m_defaultConnectorStyle.setTextColor(ot::Color(ot::Color::White));
-	m_defaultConnectorStyle.setPrimaryColor(ot::Color(ot::Color::White));
-	m_defaultConnectorStyle.setSecondaryColor(ot::Color(ot::Color::Black));
+	m_defaultConnectorStyle.setTextColor(ot::Color(White));
+	m_defaultConnectorStyle.setPrimaryColor(ot::Color(ot::White));
+	m_defaultConnectorStyle.setSecondaryColor(ot::Color(ot::Black));
 }
 
 ot::GraphicsFlowItemBuilder::~GraphicsFlowItemBuilder() {}
@@ -382,7 +381,7 @@ void ot::GraphicsFlowItemBuilder::addLeft(const std::string& _name, const std::s
 	this->addLeft(cfg);
 }
 
-void ot::GraphicsFlowItemBuilder::addLeft(const std::string& _name, const std::string& _title, GraphicsFlowItemConnector::ConnectorFigure _figure, ot::Color::DefaultColor _color) {
+void ot::GraphicsFlowItemBuilder::addLeft(const std::string& _name, const std::string& _title, GraphicsFlowItemConnector::ConnectorFigure _figure, ot::DefaultColor _color) {
 	GraphicsFlowItemConnector cfg = m_defaultConnectorStyle;
 	cfg.setName(_name);
 	cfg.setText(_title);
@@ -415,7 +414,7 @@ void ot::GraphicsFlowItemBuilder::addRight(const std::string& _name, const std::
 	this->addRight(cfg);
 }
 
-void ot::GraphicsFlowItemBuilder::addRight(const std::string& _name, const std::string& _title, GraphicsFlowItemConnector::ConnectorFigure _figure, ot::Color::DefaultColor _color) {
+void ot::GraphicsFlowItemBuilder::addRight(const std::string& _name, const std::string& _title, GraphicsFlowItemConnector::ConnectorFigure _figure, ot::DefaultColor _color) {
 	GraphicsFlowItemConnector cfg = m_defaultConnectorStyle;
 	cfg.setName(_name);
 	cfg.setText(_title);

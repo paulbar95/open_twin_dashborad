@@ -16,7 +16,7 @@
     <ClCompile Include="src\GraphicsLayoutItem.cpp">
       <Filter>src\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="src\GraphicsFactory.cpp">
+    <ClCompile Include="src\GraphicsItemFactory.cpp">
       <Filter>src\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="src\GraphicsPicker.cpp">
@@ -25,10 +25,7 @@
     <ClCompile Include="src\IconManager.cpp">
       <Filter>src\General</Filter>
     </ClCompile>
-    <ClCompile Include="src\Painter2DFactory.cpp">
-      <Filter>src\General</Filter>
-    </ClCompile>
-    <ClCompile Include="src\OTQtConverter.cpp">
+    <ClCompile Include="src\QtFactory.cpp">
       <Filter>src\General</Filter>
     </ClCompile>
     <ClCompile Include="src\GraphicsGroupItem.cpp">
@@ -256,6 +253,18 @@
     <ClCompile Include="src\ImagePreview.cpp">
       <Filter>src\Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="src\GraphicsPolygonItem.cpp">
+      <Filter>src\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GraphicsShapeItem.cpp">
+      <Filter>src\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Positioning.cpp">
+      <Filter>src\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OverlayWidgetBase.cpp">
+      <Filter>src\Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include">
@@ -314,16 +323,13 @@
     <ClInclude Include="include\OTWidgets\GraphicsLayoutItem.h">
       <Filter>include\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="include\OTWidgets\GraphicsFactory.h">
+    <ClInclude Include="include\OTWidgets\GraphicsItemFactory.h">
       <Filter>include\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="include\OTWidgets\IconManager.h">
       <Filter>include\General</Filter>
     </ClInclude>
-    <ClInclude Include="include\OTWidgets\Painter2DFactory.h">
-      <Filter>include\General</Filter>
-    </ClInclude>
-    <ClInclude Include="include\OTWidgets\OTQtConverter.h">
+    <ClInclude Include="include\OTWidgets\QtFactory.h">
       <Filter>include\General</Filter>
     </ClInclude>
     <ClInclude Include="include\OTWidgets\GraphicsGroupItem.h">
@@ -469,6 +475,18 @@
     </ClInclude>
     <ClInclude Include="include\OTWidgets\WidgetView.h">
       <Filter>include\WidgetView</Filter>
+    </ClInclude>
+    <ClInclude Include="include\OTWidgets\GraphicsPolygonItem.h">
+      <Filter>include\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\OTWidgets\GraphicsShapeItem.h">
+      <Filter>include\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\OTWidgets\OverlayWidgetBase.h">
+      <Filter>include\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="include\OTWidgets\Positioning.h">
+      <Filter>include\General</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

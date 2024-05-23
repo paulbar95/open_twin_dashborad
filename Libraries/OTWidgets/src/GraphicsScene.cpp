@@ -24,6 +24,13 @@ ot::GraphicsScene::GraphicsScene(GraphicsView* _view)
 	this->connect(this, &GraphicsScene::selectionChanged, this, &GraphicsScene::slotSelectionChanged);
 }
 
+ot::GraphicsScene::GraphicsScene(const QRectF& _sceneRect, GraphicsView* _view)
+	: QGraphicsScene(_sceneRect), m_gridSize(10), m_gridDoubleEvery(10), m_view(_view), m_connectionOrigin(nullptr), m_connectionPreview(nullptr),
+	m_connectionPreviewStyle(ot::GraphicsConnectionCfg::DirectLine), m_ignoreEvents(false), m_mouseIsPressed(false)
+{
+	this->connect(this, &GraphicsScene::selectionChanged, this, &GraphicsScene::slotSelectionChanged);
+}
+
 ot::GraphicsScene::~GraphicsScene() {}
 
 //! @todo Pen width configurable
@@ -33,7 +40,7 @@ void ot::GraphicsScene::drawBackground(QPainter* _painter, const QRectF& _rect)
 	if (m_gridSize < 1) return QGraphicsScene::drawBackground(_painter, _rect);
 
 	if (_rect != m_view->mapToScene(m_view->viewport()->rect()).boundingRect()) {
-		m_view->repaint();
+		m_view->update();
 		return;
 	}
 

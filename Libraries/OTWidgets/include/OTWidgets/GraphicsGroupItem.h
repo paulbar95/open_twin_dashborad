@@ -8,8 +8,6 @@
 // OpenTwin header
 #include "OTWidgets/GraphicsItem.h"
 
-#define OT_SimpleFactoryJsonKeyValue_GraphicsGroupItem "OT_GIGroup"
-
 namespace ot {
 
 	class OT_WIDGETS_API_EXPORT GraphicsGroupItem : public QGraphicsItemGroup, public QGraphicsLayoutItem, public ot::GraphicsItem {
@@ -17,31 +15,17 @@ namespace ot {
 		GraphicsGroupItem(bool _isStackOrLayout = false);
 		virtual ~GraphicsGroupItem();
 
+		// ###########################################################################################################################################################################################################################################################################################################################
+
+		// Base class functions: GraphicsItem
+
 		virtual bool setupFromConfig(ot::GraphicsItemCfg* _cfg) override;
 
 		virtual void removeAllConnections(void) override;
 
-		//! @brief Returns the key that is used to create an instance of this class in the simple factory
-		virtual std::string simpleFactoryObjectKey(void) const override { return std::string(OT_SimpleFactoryJsonKeyValue_GraphicsGroupItem); };
-
 		virtual void prepareGraphicsItemGeometryChange(void) override;
 
-		virtual QSizeF sizeHint(Qt::SizeHint _hint, const QSizeF& _constrains) const override;
-
-		virtual QRectF boundingRect(void) const override;
-
-		virtual void setGeometry(const QRectF& rect) override;
-
-		virtual QVariant itemChange(QGraphicsItem::GraphicsItemChange _change, const QVariant& _value) override;
-
-		virtual void mousePressEvent(QGraphicsSceneMouseEvent* _event) override;
-		virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* _event) override;
-		virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* _event) override;
-		virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* _event) override;
-
 		virtual void callPaint(QPainter* _painter, const QStyleOptionGraphicsItem* _opt, QWidget* _widget) override;
-
-		virtual void paint(QPainter* _painter, const QStyleOptionGraphicsItem* _opt, QWidget* _widget) override;
 
 		virtual QGraphicsLayoutItem* getQGraphicsLayoutItem(void) override { return this; };
 		virtual QGraphicsItem* getQGraphicsItem(void) override { return this; };
@@ -51,6 +35,35 @@ namespace ot {
 		virtual QSizeF graphicsItemSizeHint(Qt::SizeHint _hint, const QSizeF& _constrains) const override;
 
 		virtual ot::GraphicsItem* findItem(const std::string& _itemName) override;
+
+		// ###########################################################################################################################################################################################################################################################################################################################
+
+		// Base class functions: QGraphicsItem
+
+		virtual QRectF boundingRect(void) const override;
+
+		virtual QVariant itemChange(QGraphicsItem::GraphicsItemChange _change, const QVariant& _value) override;
+
+		virtual void mousePressEvent(QGraphicsSceneMouseEvent* _event) override;
+		virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* _event) override;
+		virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* _event) override;
+		virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* _event) override;
+
+		virtual void paint(QPainter* _painter, const QStyleOptionGraphicsItem* _opt, QWidget* _widget) override;
+
+		// ###########################################################################################################################################################################################################################################################################################################################
+
+		// Base class functions: QGraphicsLayoutItem
+
+		virtual QSizeF sizeHint(Qt::SizeHint _hint, const QSizeF& _constrains) const override;
+
+		virtual void setGeometry(const QRectF& rect) override;
+
+		// ###########################################################################################################################################################################################################################################################################################################################
+
+		// Setter / Getter
+
+		void addItem(GraphicsItem* _item);
 
 	private:
 		GraphicsGroupItem(const GraphicsGroupItem&) = delete;

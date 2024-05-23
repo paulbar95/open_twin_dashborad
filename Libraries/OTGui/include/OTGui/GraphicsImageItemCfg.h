@@ -10,14 +10,17 @@
 #include "OTCore/Color.h"
 #include "OTGui/GraphicsItemCfg.h"
 
-#define OT_SimpleFactoryJsonKeyValue_GraphicsImageItemCfg "OT_GICImage"
+#define OT_FactoryKey_GraphicsImageItem "OT_GIImage"
 
 namespace ot {
 
-	class OT_GUI_API_EXPORTONLY GraphicsImageItemCfg : public ot::GraphicsItemCfg {
+	class OT_GUI_API_EXPORT GraphicsImageItemCfg : public ot::GraphicsItemCfg {
 	public:
 		GraphicsImageItemCfg(const std::string& _imageSubPath = std::string());
 		virtual ~GraphicsImageItemCfg();
+
+		//! \brief Creates a copy of this item.
+		virtual GraphicsItemCfg* createCopy(void) const override;
 
 		//! @brief Add the object contents to the provided JSON object
 		//! @param _document The JSON document (used to get the allocator)
@@ -30,7 +33,7 @@ namespace ot {
 		virtual void setFromJsonObject(const ConstJsonObject& _object) override;
 
 		//! @brief Returns the key that is used to create an instance of this class in the simple factory
-		virtual std::string simpleFactoryObjectKey(void) const override { return std::string(OT_SimpleFactoryJsonKeyValue_GraphicsImageItemCfg); };
+		virtual std::string getFactoryKey(void) const override { return std::string(OT_FactoryKey_GraphicsImageItem); };
 
 		void setImagePath(const std::string& _path) { m_imageSubPath = _path; };
 		const std::string& imagePath(void) const { return m_imageSubPath; };

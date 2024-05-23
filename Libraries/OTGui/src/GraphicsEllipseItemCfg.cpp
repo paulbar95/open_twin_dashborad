@@ -7,15 +7,17 @@
 // OpenTwin header
 #include "OTCore/Logger.h"
 #include "OTGui/GraphicsEllipseItemCfg.h"
+#include "OTGui/GraphicsItemCfgFactory.h"
 #include "OTGui/Painter2D.h"
 #include "OTGui/FillPainter2D.h"
+#include "OTGui/Painter2DFactory.h"
 
-#define OT_JSON_MEMBER_Border "Border"
+#define OT_JSON_MEMBER_Outline "Outline"
 #define OT_JSON_MEMBER_RadiusX "RadiusX"
 #define OT_JSON_MEMBER_RadiusY "RadiusY"
 #define OT_JSON_MEMBER_BackgroundPainter "BackgroundPainter"
 
-static ot::SimpleFactoryRegistrar<ot::GraphicsEllipseItemCfg> ellipseItemCfg(OT_SimpleFactoryJsonKeyValue_GraphicsEllipseItemCfg);
+static ot::GraphicsItemCfgFactoryRegistrar<ot::GraphicsEllipseItemCfg> ellipseItemRegistrar(OT_FactoryKey_GraphicsEllipseItem);
 
 ot::GraphicsEllipseItemCfg::GraphicsEllipseItemCfg(double _radiusX, double _radiusY, ot::Painter2D* _backgroundPainter)
 	: m_backgroundPainter(_backgroundPainter), m_radiusX(_radiusX), m_radiusY(_radiusY)
@@ -30,6 +32,18 @@ ot::GraphicsEllipseItemCfg::~GraphicsEllipseItemCfg() {
 	if (m_backgroundPainter) delete m_backgroundPainter;
 }
 
+ot::GraphicsItemCfg* ot::GraphicsEllipseItemCfg::createCopy(void) const {
+	ot::GraphicsEllipseItemCfg* copy = new GraphicsEllipseItemCfg;
+	this->setupData(copy);
+
+	copy->m_radiusX = m_radiusX;
+	copy->m_radiusY = m_radiusY;
+	copy->m_outline = m_outline;
+	copy->setBackgroundPainer(m_backgroundPainter->createCopy());
+
+	return copy;
+}
+
 void ot::GraphicsEllipseItemCfg::addToJsonObject(JsonValue& _object, JsonAllocator& _allocator) const {
 	OTAssertNullptr(m_backgroundPainter);
 	GraphicsItemCfg::addToJsonObject(_object, _allocator);
@@ -41,9 +55,9 @@ void ot::GraphicsEllipseItemCfg::addToJsonObject(JsonValue& _object, JsonAllocat
 	m_backgroundPainter->addToJsonObject(backgroundPainterObj, _allocator);
 	_object.AddMember(OT_JSON_MEMBER_BackgroundPainter, backgroundPainterObj, _allocator);
 
-	JsonObject borderObj;
-	m_border.addToJsonObject(borderObj, _allocator);
-	_object.AddMember(OT_JSON_MEMBER_Border, borderObj, _allocator);
+	JsonObject outlineObj;
+	m_outline.addToJsonObject(outlineObj, _allocator);
+	_object.AddMember(OT_JSON_MEMBER_Outline, outlineObj, _allocator);
 }
 
 void ot::GraphicsEllipseItemCfg::setFromJsonObject(const ConstJsonObject& _object) {
@@ -52,10 +66,10 @@ void ot::GraphicsEllipseItemCfg::setFromJsonObject(const ConstJsonObject& _objec
 	m_radiusX = json::getDouble(_object, OT_JSON_MEMBER_RadiusX);
 	m_radiusY = json::getDouble(_object, OT_JSON_MEMBER_RadiusY);
 
-	m_border.setFromJsonObject(json::getObject(_object, OT_JSON_MEMBER_Border));
+	m_outline.setFromJsonObject(json::getObject(_object, OT_JSON_MEMBER_Outline));
 	
 	ConstJsonObject backgroundPainterObj = json::getObject(_object, OT_JSON_MEMBER_BackgroundPainter);
-	ot::Painter2D* p = ot::SimpleFactory::instance().createType<ot::Painter2D>(backgroundPainterObj);
+	ot::Painter2D* p = Painter2DFactory::instance().create(backgroundPainterObj);
 	p->setFromJsonObject(backgroundPainterObj);
 	this->setBackgroundPainer(p);
 }

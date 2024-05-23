@@ -9,17 +9,20 @@
 // OpenTwin header
 #include "OTGui/GraphicsBoxLayoutItemCfg.h"
 
-#define OT_SimpleFactoryJsonKeyValue_GraphicsHBoxLayoutItemCfg "OT_GICLayH"
+#define OT_FactoryKey_GraphicsHBoxLayoutItem "OT_GILayH"
 
 namespace ot {
 
-	class OT_GUI_API_EXPORTONLY GraphicsHBoxLayoutItemCfg : public GraphicsBoxLayoutItemCfg {
+	class OT_GUI_API_EXPORT GraphicsHBoxLayoutItemCfg : public GraphicsBoxLayoutItemCfg {
 	public:
 		GraphicsHBoxLayoutItemCfg();
 		virtual ~GraphicsHBoxLayoutItemCfg() {};
 
+		//! \brief Creates a copy of this item.
+		virtual GraphicsItemCfg* createCopy(void) const override;
+
 		//! @brief Returns the key that is used to create an instance of this class in the simple factory
-		virtual std::string simpleFactoryObjectKey(void) const override { return std::string(OT_SimpleFactoryJsonKeyValue_GraphicsHBoxLayoutItemCfg); };
+		virtual std::string getFactoryKey(void) const override { return std::string(OT_FactoryKey_GraphicsHBoxLayoutItem); };
 
 	private:
 		GraphicsHBoxLayoutItemCfg(const GraphicsHBoxLayoutItemCfg&) = delete;

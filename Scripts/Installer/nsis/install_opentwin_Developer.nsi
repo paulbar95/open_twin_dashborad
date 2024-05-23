@@ -232,8 +232,10 @@ Function .onInit
 		Abort
 	${EndIf}
 
-	MessageBox MB_ICONINFORMATION|MB_OK "Microsoft Visual Studio, C++ compilers and a full Git setup (including SSH) need to be installed for a full OpenTwin Development environment"
-    
+	IfFileExists $DEVENV_ROOT\devenv.exe +3 0
+		MessageBox MB_OK 'Microsoft Visual Studio (with C++ compilers) needs to be installed before running the installation. $\n$\nThe environment variable DEVENV_ROOT_2022 needs to be set to the tools directory of the Visual Studio 2022 installation, e.g., "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE".'
+		Abort
+	    
 	StrCpy $PortReturnChecker 0
 	StrCpy $PublicIpSet 0
 	StrCpy $PublicCertPageChecker 0
@@ -897,7 +899,7 @@ FunctionEnd
 ; MUI end ------
 
 Name "${PRODUCT_NAME}"
-OutFile "Install_OpenTwin_dev.exe"
+;OutFile "Install_OpenTwin_dev.exe"
 InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails hide
 ShowUnInstDetails hide
@@ -923,8 +925,6 @@ SectionEnd
 
 SectionGroup /e "OpenTwin"
 	Section "!Clone OpenTwin Repository" SEC02
-		MessageBox MB_ICONINFORMATION|MB_OK "This step of the installation will clone the OpenTwin repository on GitHub. Press OK to continue."
-
 		SetRegView 64
 		ReadRegStr $0 HKLM "SOFTWARE\GitForWindows" "InstallPath"
 		StrCpy $GitInstallPath $0
@@ -1123,11 +1123,46 @@ SectionGroup /e "Python & Sphinx"
 
 SectionGroupEnd
 
-Section "Install Qt Visual Studio Plugin" SEC10
+Section "Install MiKTeX" SEC10
+	AddSize 140000
+	DetailPrint "Installing MiKTeX..."
+		#DetailPrint "$DEVENV_ROOT"
+		ExecWait '"$TempToolChain\basic-miktex-24.1-x64.exe" --auto-install=yes --unattended --shared'	#install MiKTeX (required for Sphinx)
+		#Sleep 10000
+		#EnVar::AddValue "PATH" "$PROGRAMFILES\MiKTeX\miktex\bin\x64"
+		#Pop $0
+		#Sleep 10000
+		DetailPrint "Done."
+		#Sleep 10000
+SectionEnd
+
+Section "Install NSIS (Nullsoft Scriptable Install System)" SEC11
+	AddSize 7000
+	DetailPrint "Installing NSIS (Nullsoft Scriptable Install System)..."
+		#Sleep 10000
+		#DetailPrint "$DEVENV_ROOT"
+		ExecWait '"$TempToolChain\nsis-3.10-setup.exe" /S'	#install NSIS
+		DetailPrint "Done."
+		#Sleep 10000
+SectionEnd
+
+Section "Install 7-Zip" SEC12
+	AddSize 2000
+	DetailPrint "Installing 7-Zip)..."
+		#DetailPrint "$DEVENV_ROOT"
+		ExecWait '"$TempToolChain\7z2301-x64.exe" /S'	#install 7-Zip
+		DetailPrint "Done."
+		#Sleep 10000
+SectionEnd
+
+Section "Install Qt Visual Studio Plugin" SEC13
 	AddSize 20000
 	DetailPrint "Installing Qt Visual Studio Plugin..."
 		#DetailPrint "$DEVENV_ROOT"
 		ExecWait '"$DEVENV_ROOT\VSIXInstaller.exe" /quiet "$TempToolChain\qt-vsaddin-msvc2022-3.0.2.vsix"'	#install the Qt visual studio plugin
+
+		MessageBox MB_ICONEXCLAMATION|MB_OK 'The Qt plugin for Visual Studio has been installed. $\n$\nYou need to configure the plugin by opening Visual Studio and choosing Extensions->Qt VS Tools->Qt Versions.$\n$\nIn this dialog box, you can add a new Qt version named "6.6.1" and specify the following path:$\n$\n$DEV_ROOT\ThirdParty\Qt\6.6.1\msvc2019_64'
+
 		DetailPrint "Done."
 		#Sleep 10000
 SectionEnd
@@ -1140,16 +1175,23 @@ Section "-CleanupTasks"
 	DetailPrint "Cleaning up..."
 	RMDir /r ${TEMP_TOOLCHAIN_DIR}
 	RMDir /r $GITHUB_DESKTOP_DEPLOYMENT_INSTALL_LOCATION
+	#Sleep 10000
 	
 SectionEnd
 
 Section -AdditionalIcons
+	DetailPrint "Add Icons..."
   	!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
   		CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\Uninstall.lnk" "$INSTDIR\Uninstall_OpenTwin.exe" "" ${OPENTWIN_UNAPP_ICON}
  	!insertmacro MUI_STARTMENU_WRITE_END
+	DetailPrint "Done."
+	#Sleep 10000
+
 SectionEnd
 
 Section -Post
+	DetailPrint "Post install actions..."
+
 	WriteUninstaller "$INSTDIR\Uninstall_OpenTwin.exe"
 	WriteRegStr HKLM "${PRODUCT_DIR_REGKEY}" "" "$INSTDIR\OpenTwin.exe"
 	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
@@ -1158,7 +1200,9 @@ Section -Post
 	WriteRegStr HKLM "${REGPATH_UNINSTSUBKEY}" "UninstallString" '"$INSTDIR\Uninstall_OpenTwin.exe"'
 	WriteRegDWORD HKLM "${REGPATH_UNINSTSUBKEY}" "NoModify" 1
 	WriteRegDWORD HKLM "${REGPATH_UNINSTSUBKEY}" "NoRepair" 1
-
+	DetailPrint "Done."
+	#Sleep 10000
+	
 SectionEnd
 
 #Section descriptions
@@ -1178,7 +1222,13 @@ SectionEnd
 	!insertmacro MUI_DESCRIPTION_TEXT ${SEC09} "Install a standard installation of Python 3.9"
 	!insertmacro MUI_DESCRIPTION_TEXT ${SEC09_1} "Install Sphinx via pip and the 'Read the docs' theme required for building the documentation"
 
-	!insertmacro MUI_DESCRIPTION_TEXT ${SEC10} "Install the Qt Visual Studio 2022 plugin"
+	!insertmacro MUI_DESCRIPTION_TEXT ${SEC10} "Install MiKTeX"
+	
+	!insertmacro MUI_DESCRIPTION_TEXT ${SEC11} "Install NSIS (Nullsoft Scriptable Install System)"
+
+	!insertmacro MUI_DESCRIPTION_TEXT ${SEC12} "Install 7-Zip"
+	
+	!insertmacro MUI_DESCRIPTION_TEXT ${SEC13} "Install the Qt Visual Studio 2022 plugin"
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 

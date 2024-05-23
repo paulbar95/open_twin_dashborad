@@ -5,6 +5,7 @@
 
 // OpenTwin header
 #include "OTCore/Logger.h"
+#include "OTGui/GraphicsItemCfgFactory.h"
 #include "OTGui/GraphicsGridLayoutItemCfg.h"
 
 #define OT_JSON_MEMBER_Rows "Rows"
@@ -13,7 +14,7 @@
 #define OT_JSON_MEMBER_RowStretch "RowStretch"
 #define OT_JSON_MEMBER_ColumnStretch "ColumnStretch"
 
-static ot::SimpleFactoryRegistrar<ot::GraphicsGridLayoutItemCfg> gridCfg(OT_SimpleFactoryJsonKeyValue_GraphicsGridLayoutItemCfg);
+static ot::GraphicsItemCfgFactoryRegistrar<ot::GraphicsGridLayoutItemCfg> ellipseItemRegistrar(OT_FactoryKey_GraphicsGridLayoutItem);
 
 ot::GraphicsGridLayoutItemCfg::GraphicsGridLayoutItemCfg(int _rows, int _columns)
 	: m_rows(_rows), m_columns(_columns)
@@ -28,6 +29,31 @@ ot::GraphicsGridLayoutItemCfg::~GraphicsGridLayoutItemCfg() {
 		}
 	}
 	m_items.clear();
+}
+
+ot::GraphicsItemCfg* ot::GraphicsGridLayoutItemCfg::createCopy(void) const {
+	ot::GraphicsGridLayoutItemCfg* copy = new GraphicsGridLayoutItemCfg;
+	this->setupData(copy);
+
+	copy->m_rows = m_rows;
+	copy->m_columns = m_columns;
+	copy->m_rowStretch = m_rowStretch;
+	copy->m_columnStretch = m_columnStretch;
+
+	for (const std::vector<GraphicsItemCfg*>& r : m_items) {
+		std::vector<GraphicsItemCfg*> row;
+		for (GraphicsItemCfg* itm : r) {
+			if (itm) {
+				row.push_back(itm->createCopy());
+			}
+			else {
+				row.push_back(nullptr);
+			}
+		}
+		copy->m_items.push_back(row);
+	}
+
+	return copy;
 }
 
 void ot::GraphicsGridLayoutItemCfg::addToJsonObject(JsonValue& _object, JsonAllocator& _allocator) const {
@@ -87,20 +113,17 @@ void ot::GraphicsGridLayoutItemCfg::setFromJsonObject(const ConstJsonObject& _ob
 			return;
 		}
 		for (rapidjson::SizeType c = 0; c < columnArr.Size(); c++) {
+			m_items[r][c] = nullptr;
 			if (columnArr[c].IsNull()) {
-				m_items[r][c] = nullptr;
 				continue;
 			}
 			else if (columnArr[c].IsObject()) {
 				GraphicsItemCfg* itm = nullptr;
 				try {
 					ConstJsonObject itemObj = json::getObject(columnArr, c);
-					itm = ot::SimpleFactory::instance().createType<GraphicsItemCfg>(itemObj);
-					if (itm) {
-						itm->setFromJsonObject(itemObj);
-					}
-					else {
-						OT_LOG_EA("Factory failed");
+					itm = GraphicsItemCfgFactory::instance().create(itemObj);
+					if (!itm) {
+						continue;
 					}
 					m_items[r][c] = itm;
 				}

@@ -38,7 +38,7 @@
     <ClCompile Include="src\GraphicsConnectionItem.cpp" />
     <ClCompile Include="src\GraphicsConnectionPreviewItem.cpp" />
     <ClCompile Include="src\GraphicsEllipseItem.cpp" />
-    <ClCompile Include="src\GraphicsFactory.cpp" />
+    <ClCompile Include="src\GraphicsItemFactory.cpp" />
     <ClCompile Include="src\GraphicsHighlightItem.cpp" />
     <ClCompile Include="src\GraphicsGridLayoutItem.cpp" />
     <ClCompile Include="src\GraphicsGroupItem.cpp" />
@@ -52,8 +52,10 @@
     <ClCompile Include="src\GraphicsPicker.cpp" />
     <ClCompile Include="src\GraphicsPickerView.cpp" />
     <ClCompile Include="src\GraphicsPixmapItem.cpp" />
+    <ClCompile Include="src\GraphicsPolygonItem.cpp" />
     <ClCompile Include="src\GraphicsRectangularItem.cpp" />
     <ClCompile Include="src\GraphicsScene.cpp" />
+    <ClCompile Include="src\GraphicsShapeItem.cpp" />
     <ClCompile Include="src\GraphicsStackItem.cpp" />
     <ClCompile Include="src\GraphicsTextItem.cpp" />
     <ClCompile Include="src\GraphicsTriangleItem.cpp" />
@@ -66,7 +68,7 @@
     <ClCompile Include="src\LineEdit.cpp" />
     <ClCompile Include="src\MessageDialog.cpp" />
     <ClCompile Include="src\OnePropertyDialog.cpp" />
-    <ClCompile Include="src\OTQtConverter.cpp" />
+    <ClCompile Include="src\OverlayWidgetBase.cpp" />
     <ClCompile Include="src\Painter2DEditButton.cpp" />
     <ClCompile Include="src\Painter2DEditDialog.cpp">
       <DynamicSource Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|x64'">input</DynamicSource>
@@ -80,7 +82,8 @@
     </ClCompile>
     <ClCompile Include="src\Painter2DPreview.cpp" />
     <ClCompile Include="src\PlainTextEditView.cpp" />
-    <ClCompile Include="src\Painter2DFactory.cpp" />
+    <ClCompile Include="src\Positioning.cpp" />
+    <ClCompile Include="src\QtFactory.cpp" />
     <ClCompile Include="src\PlainTextEdit.cpp" />
     <ClCompile Include="src\PropertyDialog.cpp" />
     <ClCompile Include="src\PropertyGridItemDelegate.cpp" />
@@ -140,12 +143,15 @@
     <QtMoc Include="include\OTWidgets\GlobalColorStyle.h" />
     <ClInclude Include="include\OTWidgets\ComboBox.h" />
     <ClInclude Include="include\OTWidgets\GraphicsPickerView.h" />
+    <ClInclude Include="include\OTWidgets\GraphicsPolygonItem.h" />
+    <ClInclude Include="include\OTWidgets\GraphicsShapeItem.h" />
     <ClInclude Include="include\OTWidgets\GraphicsViewView.h" />
     <QtMoc Include="include\OTWidgets\Painter2DEditButton.h" />
     <QtMoc Include="include\OTWidgets\Painter2DEditDialog.h" />
     <QtMoc Include="include\OTWidgets\Painter2DPreview.h" />
     <QtMoc Include="include\OTWidgets\Label.h" />
     <QtMoc Include="include\OTWidgets\ImagePreview.h" />
+    <ClInclude Include="include\OTWidgets\OverlayWidgetBase.h" />
     <ClInclude Include="include\OTWidgets\PlainTextEditView.h" />
     <ClInclude Include="include\OTWidgets\PropertyGridItemDelegate.h" />
     <ClInclude Include="include\OTWidgets\PropertyGridView.h" />
@@ -156,6 +162,7 @@
     <QtMoc Include="include\OTWidgets\Splitter.h" />
     <ClInclude Include="include\OTWidgets\TextEditorView.h" />
     <ClInclude Include="include\OTWidgets\WidgetProperties.h" />
+    <ClInclude Include="include\OTWidgets\Positioning.h" />
     <ClInclude Include="include\OTWidgets\WidgetView.h" />
     <ClInclude Include="include\OTWidgets\WidgetViewFactory.h" />
     <QtMoc Include="include\OTWidgets\WidgetViewManager.h" />
@@ -174,7 +181,7 @@
     <ClInclude Include="include\OTWidgets\GraphicsConnectionItem.h" />
     <ClInclude Include="include\OTWidgets\GraphicsConnectionPreviewItem.h" />
     <ClInclude Include="include\OTWidgets\GraphicsEllipseItem.h" />
-    <ClInclude Include="include\OTWidgets\GraphicsFactory.h" />
+    <ClInclude Include="include\OTWidgets\GraphicsItemFactory.h" />
     <ClInclude Include="include\OTWidgets\GraphicsHighlightItem.h" />
     <ClInclude Include="include\OTWidgets\GraphicsGridLayoutItem.h" />
     <ClInclude Include="include\OTWidgets\GraphicsHBoxLayoutItem.h" />
@@ -205,8 +212,7 @@
     <ClInclude Include="include\OTWidgets\PropertyInputStringList.h" />
     <ClInclude Include="include\OTWidgets\SpinBox.h" />
     <ClInclude Include="include\OTWidgets\OnePropertyDialog.h" />
-    <ClInclude Include="include\OTWidgets\OTQtConverter.h" />
-    <ClInclude Include="include\OTWidgets\Painter2DFactory.h" />
+    <ClInclude Include="include\OTWidgets\QtFactory.h" />
     <QtMoc Include="include\OTWidgets\PlainTextEdit.h" />
     <QtMoc Include="include\OTWidgets\PropertyGrid.h" />
     <QtMoc Include="include\OTWidgets\PropertyDialog.h" />
@@ -331,6 +337,7 @@
       </SDLCheck>
       <PreprocessorDefinitions>OT_WIDGETS_EXPORTS;$(Qt_DEFINES_);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile />
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -353,6 +360,7 @@
       </SDLCheck>
       <PreprocessorDefinitions>OT_WIDGETS_EXPORTS;$(Qt_DEFINES_);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile />
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -372,6 +380,7 @@
       <AdditionalIncludeDirectories>$(OT_WIDGETS_ROOT)\$(OT_INC);$(OT_SYSTEM_ROOT)\$(OT_INC);$(OT_CORE_ROOT)\$(OT_INC);$(OT_GUI_ROOT)\$(OT_INC);$(R_JSON_INCR);$(QT_ADS_ROOT)\include;$(Qt_INCLUDEPATH_);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>OT_WIDGETS_EXPORTS;$(Qt_DEFINES_);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile />
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -392,6 +401,7 @@
       <AdditionalIncludeDirectories>$(OT_SYSTEM_ROOT)\$(OT_INC);$(OT_CORE_ROOT)\$(OT_INC);$(OT_GUI_ROOT)\$(OT_INC);$(R_JSON_INCR);$(QT_ADS_ROOT)\include;$(Qt_INCLUDEPATH_);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>OT_WIDGETS_EXPORTS;$(Qt_DEFINES_);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile />
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -31,7 +31,7 @@ namespace ot {
 	class OT_WIDGETS_API_EXPORT GraphicsView : public QGraphicsView {
 		Q_OBJECT
 	public:
-		GraphicsView();
+		GraphicsView(GraphicsScene* _scene = (GraphicsScene*)nullptr);
 		virtual ~GraphicsView();
 
 		void resetView(void);
@@ -43,6 +43,7 @@ namespace ot {
 
 		const bool getStateChangeInProgress() const { return m_stateChangeInProgress; }
 
+		void setGraphicsScene(GraphicsScene* _scene);
 		GraphicsScene* getGraphicsScene(void) { return m_scene; };
 		
 		GraphicsItem* getItem(const ot::UID& _itemUid);

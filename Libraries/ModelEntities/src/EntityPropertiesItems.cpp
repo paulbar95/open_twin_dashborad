@@ -6,14 +6,14 @@
 #include "TemplateDefaultManager.h"
 
 #include "OTCore/Logger.h"
-#include "OTCore/Property.h"
-#include "OTCore/PropertyInt.h"
-#include "OTCore/PropertyBool.h"
-#include "OTCore/PropertyGroup.h"
-#include "OTCore/PropertyColor.h"
-#include "OTCore/PropertyDouble.h"
-#include "OTCore/PropertyString.h"
-#include "OTCore/PropertyStringList.h"
+#include "OTGui/Property.h"
+#include "OTGui/PropertyInt.h"
+#include "OTGui/PropertyBool.h"
+#include "OTGui/PropertyGroup.h"
+#include "OTGui/PropertyColor.h"
+#include "OTGui/PropertyDouble.h"
+#include "OTGui/PropertyString.h"
+#include "OTGui/PropertyStringList.h"
 
 void EntityPropertiesBase::setNeedsUpdate(void)
 {
@@ -499,10 +499,10 @@ void EntityPropertiesColor::setFromConfiguration(const ot::Property* _property)
 		OT_LOG_E("Property cast failed");
 		return;
 	}
-
-	setColorR(actualProperty->value().r());
-	setColorG(actualProperty->value().g());
-	setColorB(actualProperty->value().b());
+	ot::ColorF c(actualProperty->value());
+	setColorR(c.r());
+	setColorG(c.g());
+	setColorB(c.b());
 }
 
 void EntityPropertiesColor::addToJsonDocument(ot::JsonDocument& jsonDoc, EntityBase* root)
@@ -998,8 +998,8 @@ void EntityPropertiesEntityList::createProperty(const std::string &group, const 
 void EntityPropertiesProjectList::copySettings(EntityPropertiesBase* other, EntityBase* root)
 {
 	EntityPropertiesBase::copySettings(other, root);
-	EntityPropertiesSelection* selection = dynamic_cast<EntityPropertiesSelection*>(other);
-	_value = selection->getValue();
+	EntityPropertiesProjectList* otherProject = dynamic_cast<EntityPropertiesProjectList*>(other);
+	_value = otherProject->_value;
 	setNeedsUpdate();
 }
 

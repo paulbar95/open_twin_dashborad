@@ -70,7 +70,7 @@ const LandingPage = () => {
       <div className="homeContainer">
         <Link to="/groups" style={{ textDecoration: "none" }}>
           <Card
-            title={t("landingPage:groupTitle")}
+            title="Test"
             number={numberOfGroups}
             linkTo={t("landingPage:groupButton")}
             icon={groupIcon}

@@ -17,6 +17,13 @@ IF "%OPENTWIN_THIRDPARTY_ROOT%" == "" (
 REM First, we need to shutdown the application in case that services are still Running
 CALL "%OPENTWIN_DEV_ROOT%\Scripts\BuildAndTest\ShutdownAll.bat"
 
+IF "%OT_INSTALLIMAGES_DIR%" == "" (
+    SET OT_INSTALLIMAGES_DIR="%OPENTWIN_DEV_ROOT%\InstallationImages"
+)
+
+RMDIR /S /Q "%OT_INSTALLIMAGES_DIR%"
+MKDIR "%OT_INSTALLIMAGES_DIR%"
+
 set NSIS_REG_KEY=HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\NSIS
 set SEVENZIP_REG_KEY=HKEY_CURRENT_USER\SOFTWARE\7-Zip
 set SEVENZIP_VALUE=Path
@@ -34,6 +41,7 @@ Set DEVELOPER_NSI="!OPENTWIN_DEV_ROOT!\Scripts\Installer\nsis\install_opentwin_D
 
 Set THIRDPARTY_UNZIP_PATH="!OPENTWIN_THIRDPARTY_ROOT!\Installer_Tools"
 Set THIRDPARTY_ZIPFILE="!OPENTWIN_THIRDPARTY_ROOT!\Installer_Tools\ThirdParty.zip.001"
+Set PLUGIN_ZIPFILE="!OPENTWIN_THIRDPARTY_ROOT!\Installer_Tools\ThirdParty\dev\EnVar_plugin.zip"
 
 SET HELPER_PATH="!OPENTWIN_DEV_ROOT!\Scripts\Installer\helper"
 
@@ -62,6 +70,9 @@ echo +++ COMPILE TIME +++
 	echo Extracting Third Party Toolchain using 7-Zip...
 	"!SEVENZIP_REG_DATA!\7z.exe" x !THIRDPARTY_ZIPFILE! -o!THIRDPARTY_UNZIP_PATH! -y
 	
+REM	echo Extracting EnVar plugin for NSIS using 7-Zip...
+REM	"!SEVENZIP_REG_DATA!\7z.exe" x !PLUGIN_ZIPFILE! -o!NSIS_REG_VALUE! -y -aos
+
 	echo Copying Installation helpers...
 	RMDIR /S /Q "!HELPER_PATH!"
 	mkdir !HELPER_PATH!
@@ -74,8 +85,8 @@ echo +++ COMPILE TIME +++
 	cd %cd%
 
 	echo COMPILING OPENTWIN INSTALLATION SCRIPTS
-	!MAKENSIS_PATH! /V3 !ENDUSER_NSI!
-	!MAKENSIS_PATH! /V3 !DEVELOPER_NSI!
+	!MAKENSIS_PATH! /V3 "/XOutFile "%OT_INSTALLIMAGES_DIR%\Install_OpenTwin.exe"" !ENDUSER_NSI!
+	!MAKENSIS_PATH! /V3 "/XOutFile "%OT_INSTALLIMAGES_DIR%\Install_OpenTwin_Development.exe"" !DEVELOPER_NSI!
 	GOTO END_SUCCESS
 
 :END_SUCCESS

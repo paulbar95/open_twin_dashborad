@@ -72,7 +72,7 @@
 	Var MONGODB_DB_PATH
 	Var MONGODB_LOG_PATH
 	Var UNINSTALL_MONGODB_FLAG
-
+	
 	Var OPEN_TWIN_SERVICES_ADDRESS
 
 #=================================================================
@@ -103,8 +103,8 @@
 	!define OPENTWIN_UNAPP_ICON '"$INSTDIR\icons\Application\opentwin_uninstall_icon_48x48.ico"'
 
 	!define CREATE_CERTIFICATE_BATCH '"$INSTDIR\Certificates\CreateServerCertificate_custom.cmd"'
-	!define DEFAULT_MONGODB_STORAGE_PATH '"$INSTDIR\DataStorage\data"'
-	!define DEFAULT_MONGODB_LOG_PATH '"$INSTDIR\DataStorage\log"'
+	!define DEFAULT_MONGODB_STORAGE_PATH '"C:\OT-DataStorage\data"'
+	!define DEFAULT_MONGODB_LOG_PATH '"C:\OT-DataStorage\log"'
 	!define DEFAULT_MONGODB_INSTALL_PATH '"$PROGRAMFILES64\MongoDB\Server\4.4"'
 	!define MONGODB_DELETION_PATH '"$PROGRAMFILES64\MongoDB"'
 	!define LICENSE_FILE_PATH '"..\..\..\LICENSE.md"'
@@ -135,6 +135,71 @@ RequestExecutionLevel admin
 	Call UninstallExisting
 	Pop ${exitcode}
 !macroend
+
+ ; GetParent
+ ; input, top of stack  (e.g. C:\Program Files\Foo)
+ ; output, top of stack (replaces, with e.g. C:\Program Files)
+ ; modifies no other variables.
+ ;
+ ; Usage:
+ ;   Push "C:\Program Files\Directory\Whatever"
+ ;   Call GetParent
+ ;   Pop $R0
+ ;   ; at this point $R0 will equal "C:\Program Files\Directory"
+ 
+Function GetParent
+ 
+  Exch $R0
+  Push $R1
+  Push $R2
+  Push $R3
+ 
+  StrCpy $R1 0
+  StrLen $R2 $R0
+ 
+  loop:
+    IntOp $R1 $R1 + 1
+    IntCmp $R1 $R2 get 0 get
+    StrCpy $R3 $R0 1 -$R1
+    StrCmp $R3 "\" get
+  Goto loop
+ 
+  get:
+    StrCpy $R0 $R0 -$R1
+ 
+    Pop $R3
+    Pop $R2
+    Pop $R1
+    Exch $R0
+ 
+FunctionEnd
+
+Function un.GetParent
+ 
+  Exch $R0
+  Push $R1
+  Push $R2
+  Push $R3
+ 
+  StrCpy $R1 0
+  StrLen $R2 $R0
+ 
+  loop:
+    IntOp $R1 $R1 + 1
+    IntCmp $R1 $R2 get 0 get
+    StrCpy $R3 $R0 1 -$R1
+    StrCmp $R3 "\" get
+  Goto loop
+ 
+  get:
+    StrCpy $R0 $R0 -$R1
+ 
+    Pop $R3
+    Pop $R2
+    Pop $R1
+    Exch $R0
+ 
+FunctionEnd
 
 Function UninstallExisting
 	Exch $1 ; uninstcommand
@@ -173,28 +238,6 @@ Function UninstallExisting
 FunctionEnd
 # ===================================================================
 # ===================================================================
-
-#.onInit function to initialize any values that need initializing at the beginning of the script
-Function .onInit
-	#from front end installer
-	!insertmacro EnsureAdminRights
-	  ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "UninstallString"
-	${If} $0 != ""
-	${AndIf} ${Cmd} `MessageBox MB_YESNO|MB_ICONQUESTION "Uninstall previous version?" /SD IDYES IDYES`
-	!insertmacro UninstallExisting $0 $0
-		${If} $0 <> 0
-			MessageBox MB_YESNO|MB_ICONSTOP "Failed to uninstall, continue anyway?" /SD IDYES IDYES +2
-				Abort
-		${EndIf}
-	${EndIf}
-
-    StrCpy $PortReturnChecker 0
-	StrCpy $PublicIpSet 0
-	StrCpy $PublicCertPageChecker 0
-
-	StrCpy "$ROOTDIR" "$WINDIR" 2
-
-FunctionEnd
 
 
 ########################################################################
@@ -616,8 +659,206 @@ FunctionEnd
 	FunctionEnd
 */
 
+
+; MUI Settings
+	
+	!define MUI_ABORTWARNING
+	!define MUI_ICON ${MUI_ICON_PATH}
+	!define MUI_UNICON ${MUI_UNICON_PATH} 
+
+	; Welcome page
+	!insertmacro MUI_PAGE_WELCOME
+	; License page
+	!define MUI_LICENSEPAGE_CHECKBOX
+	!insertmacro MUI_PAGE_LICENSE ${LICENSE_FILE_PATH}
+
+	; Components page
+	!insertmacro MUI_PAGE_COMPONENTS
+
+	; Page calls - order is relevant!
+	; Directory page
+	!insertmacro MUI_PAGE_DIRECTORY
+	Page custom DatabaseEntry
+	
+	#page custom DatabaseInfo #MongoDB paths debug page
+	Page custom NetworkModePage OnNetworkLeave
+	Page custom PublicIPCertificate OnPublicCertficateLeave
+	#Page custom NetworkInfoPage
+	Page custom PortPage OnPortLeave
+	#Page custom PortInfoPage
+
+	; Start menu page
+	var ICONS_GROUP
+	!define MUI_STARTMENUPAGE_NODISABLE
+	!define MUI_STARTMENUPAGE_DEFAULTFOLDER "Launch OpenTwin"
+	!define MUI_STARTMENUPAGE_REGISTRY_ROOT "${PRODUCT_UNINST_ROOT_KEY}"
+	!define MUI_STARTMENUPAGE_REGISTRY_KEY "${PRODUCT_UNINST_KEY}"
+	!define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "${PRODUCT_STARTMENU_REGVAL}"
+	!insertmacro MUI_PAGE_STARTMENU Application $ICONS_GROUP
+	; Instfiles page
+	!insertmacro MUI_PAGE_INSTFILES
+	; Finish page
+	#!define MUI_FINISHPAGE_RUN "$INSTDIR\OpenTwin_local.bat"
+
+	!define MUI_TEXT_FINISH_INFO_TEXT "Installation complete. All programs and dependencies have been setup and installed successfully. Click on Finish to close the installer."
+
+	!insertmacro MUI_PAGE_FINISH
+
+	; Uninstaller pages
+	!insertmacro MUI_UNPAGE_INSTFILES
+
+	; Language files
+	!insertmacro MUI_LANGUAGE "English"
+; MUI end ------
+
+Name "${PRODUCT_NAME}"
+;OutFile "Install OpenTwin.exe"
+InstallDir "$PROGRAMFILES\OpenTwin" ; = $INSTDIR
+InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
+ShowInstDetails hide
+ShowUnInstDetails hide
+
+Section "-Extract Installer Tools (Required)" SEC01
+	SectionIn RO ;read only section
+	SetOutPath "$INSTDIR\Tools\ThirdParty"
+	DetailPrint "Extracting toolchain..."
+	File /r "..\..\..\..\ThirdParty\Installer_Tools\ThirdParty\shared\*.*"
+	
+	DetailPrint "Extracting installation helper..."
+	SetOutPath "$INSTDIR\Tools\helper"
+	File /r "..\helper\*.*"
+
+	DetailPrint "Extracting javascript files..."
+	SetOutPath "$INSTDIR\Tools\javascript"
+	File /r "..\javascript\*.*"
+
+SectionEnd
+
+Section "OpenTwin Main Files (Required)" SEC02
+	SectionIn RO ;read only section
+	SetOutPath "$INSTDIR"
+	SetOverwrite ifnewer
+
+	DetailPrint "Extracting..."
+
+	File /r "..\..\..\Deployment\*.*"
+		#relative to script location
+		#    ".\" 	 = the script location itself
+		#    "..\" 	 = one directory up
+		#    "..\..\"  = two directories up etc.
+
+	${If} $PublicIpSet <> 0 #public IP was set
+		ExpandEnvStrings $0 %COMSPEC%
+			ExecWait '"$0" /c "START /WAIT /MIN cmd.exe /c ""$INSTDIR\Tools\ThirdParty\RefreshEnv.cmd" && cd "$INSTDIR\Certificates" && "$INSTDIR\Certificates\CreateServerCertificate.bat""" '
+	${Else}
+		Goto +2
+	${EndIf}
+
+	DetailPrint "Installing VC Redistributable..."
+	# The 32bit version is required for Apache
+	ExecWait '"$INSTDIR\Tools\ThirdParty\VC_redist.x86.exe" /silent'					
+	ExecWait '"$INSTDIR\Tools\ThirdParty\VC_redist.x64.exe" /silent'					
+
+	; Shortcuts
+	!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
+	CreateDirectory "$SMPROGRAMS\$ICONS_GROUP"
+	CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\OpenTwin.lnk" "$INSTDIR\OpenTwin_local.bat" "" ${OPENTWIN_APP_ICON}
+	CreateShortCut "$DESKTOP\OpenTwin.lnk" "$INSTDIR\OpenTwin_local.bat" "" ${OPENTWIN_APP_ICON}
+	!insertmacro MUI_STARTMENU_WRITE_END
+SectionEnd
+
+
+Section "MongoDB Setup" SEC03
+	AddSize 738000
+	; /i = package to install
+	; /qn = quiet install
+	; INSTALLLOCATION = install directory
+	
+	#this execwait would have to be enabled again if the custom install location can be used again
+	#ExecWait 'msiexec /l*v mdbinstall.log  /qb /i "$INSTDIR\Tools\mongodb-windows-x86_64-4.4.28-signed.msi" INSTALLLOCATION="$MONGODB_INSTALL_PATH" SHOULD_INSTALL_COMPASS="0" ADDLOCAL="ServerService,Client"'
+	
+	DetailPrint "Running MongoDB installation scripts..."
+
+	ExecWait 'msiexec /l*v mdbinstall.log  /qb /i "$INSTDIR\Tools\ThirdParty\mongodb-windows-x86_64-4.4.28-signed.msi" INSTALLLOCATION="$MONGODB_INSTALL_PATH" SHOULD_INSTALL_COMPASS="0" ADDLOCAL="ServerService,Client"'		
+	Sleep 5000
+
+	nsExec::ExecToLog 'net stop "MongoDB"'	
+
+	##########################################
+	# call for python scripts via $INSTDIR
+	##########################################
+
+	DetailPrint "Running scripts..."
+
+	# update the mongodB config file without authentication
+	ExecWait '"$INSTDIR\Tools\helper\ConfigMongoDBNoAuth.exe" "$MONGODB_INSTALL_PATH\bin\mongod.cfg" "$MONGODB_DB_PATH" "$MONGODB_LOG_PATH" $NetworkModeSelection'
+
+	#set directory permissions for the mongoDB service
+	ExecWait '"$INSTDIR\Tools\helper\SetPermissions.exe" "$MONGODB_DB_PATH" "$MONGODB_LOG_PATH"'
+
+	# restarting mongoDB service
+	nsExec::ExecToLog 'net start "MongoDB"'
+
+	# 'net' command waits for the service to be stopped/started automatically
+	# no additional checks needed
+
+	# call for js script to paste admin user creation
+	ExpandEnvStrings $0 %COMSPEC%
+		ExecWait '"$0" /c "START /WAIT /MIN cmd.exe /c " "$MONGODB_INSTALL_PATH\bin\mongo.exe" < "$INSTDIR\Tools\javascript\db_admin.js" " "'
+	
+	nsExec::ExecToLog 'net stop "MongoDB"'	
+
+	# mongoDB_storage_script_wauth.py
+	${If} $PublicIpSet <> 0
+		ExecWait '"$INSTDIR\Tools\helper\ConfigMongoDBWithAuth.exe" "$MONGODB_INSTALL_PATH\bin\mongod.cfg" "$PUBLIC_CERT_PATH\certificateKeyFile.pem" "$MONGODB_CUSTOM_PORT"'
+		ExpandEnvStrings $0 %COMSPEC%
+			ExecWait '"$0" /c "START /WAIT /MIN cmd.exe /c "certutil -addstore root "$PUBLIC_CERT_PATH\ca.pem"""" '	
+	${Else}
+		ExecWait '"$INSTDIR\Tools\helper\ConfigMongoDBWithAuth.exe" "$MONGODB_INSTALL_PATH\bin\mongod.cfg" "$DEFAULT_CERT_PATH\certificateKeyFile.pem" "$MONGODB_CUSTOM_PORT"'
+		ExpandEnvStrings $0 %COMSPEC%
+			ExecWait '"$0" /c "START /WAIT /MIN cmd.exe /c "certutil -addstore root "$DEFAULT_CERT_PATH\ca.pem"""" '
+	${EndIf}
+		
+	DetailPrint "Restart services..."
+	nsExec::ExecToLog 'net start "MongoDB"'	
+	
+	#DetailPrint "Wait..."
+	#Sleep 10000
+	
+SectionEnd
+
+Section -AdditionalIcons
+  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
+  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\Uninstall.lnk" "$INSTDIR\Uninstall_OpenTwin.exe" "" ${OPENTWIN_UNAPP_ICON}
+  !insertmacro MUI_STARTMENU_WRITE_END
+SectionEnd
+
+Section -Post
+	WriteUninstaller "$INSTDIR\Uninstall_OpenTwin.exe"
+	WriteRegStr HKLM "${PRODUCT_DIR_REGKEY}" "" "$INSTDIR\OpenTwin.exe"
+	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
+	WriteRegStr HKLM "${REGPATH_UNINSTSUBKEY}" "DisplayName" "${PRODUCT_NAME}"
+	WriteRegStr HKLM "${REGPATH_UNINSTSUBKEY}" "Publisher" "http://www.opentwin.net"
+	WriteRegStr HKLM "${REGPATH_UNINSTSUBKEY}" "DisplayIcon" ${OPENTWIN_APP_ICON}
+	WriteRegStr HKLM "${REGPATH_UNINSTSUBKEY}" "UninstallString" '"$INSTDIR\Uninstall_OpenTwin.exe"'
+	WriteRegDWORD HKLM "${REGPATH_UNINSTSUBKEY}" "NoModify" 1
+	WriteRegDWORD HKLM "${REGPATH_UNINSTSUBKEY}" "NoRepair" 1
+
+SectionEnd
+
+#Section descriptions
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC02} "Install all required OpenTwin files"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC03} "Install MongoDB and set up all configurations for OpenTwin"
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
+
 # DATABASE DIRECTORY OPERATIONS (ACTIVE)
 	Function DatabaseEntry
+	
+		${IfNot} ${SectionIsSelected} ${SEC03}
+			Abort
+		${EndIf}
+	
 		!insertmacro MUI_HEADER_TEXT "MongoDB Directories" "MongoDB and its setup are required for OpenTwin to run. A location for the storage and log files are needed for the MongoDB installation"
 
 		nsDialogs::Create 1018
@@ -723,195 +964,6 @@ FunctionEnd
 */
 
 
-; MUI Settings
-	
-	!define MUI_ABORTWARNING
-	!define MUI_ICON ${MUI_ICON_PATH}
-	!define MUI_UNICON ${MUI_UNICON_PATH} 
-
-	; Welcome page
-	!insertmacro MUI_PAGE_WELCOME
-	; License page
-	!define MUI_LICENSEPAGE_CHECKBOX
-	!insertmacro MUI_PAGE_LICENSE ${LICENSE_FILE_PATH}
-
-	; Components page
-	!insertmacro MUI_PAGE_COMPONENTS
-
-	; Page calls - order is relevant!
-	; Directory page
-	!insertmacro MUI_PAGE_DIRECTORY
-	Page custom DatabaseEntry
-	#page custom DatabaseInfo #MongoDB paths debug page
-	Page custom NetworkModePage OnNetworkLeave
-	Page custom PublicIPCertificate OnPublicCertficateLeave
-	#Page custom NetworkInfoPage
-	Page custom PortPage OnPortLeave
-	#Page custom PortInfoPage
-
-	; Start menu page
-	var ICONS_GROUP
-	!define MUI_STARTMENUPAGE_NODISABLE
-	!define MUI_STARTMENUPAGE_DEFAULTFOLDER "Launch OpenTwin"
-	!define MUI_STARTMENUPAGE_REGISTRY_ROOT "${PRODUCT_UNINST_ROOT_KEY}"
-	!define MUI_STARTMENUPAGE_REGISTRY_KEY "${PRODUCT_UNINST_KEY}"
-	!define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "${PRODUCT_STARTMENU_REGVAL}"
-	!insertmacro MUI_PAGE_STARTMENU Application $ICONS_GROUP
-	; Instfiles page
-	!insertmacro MUI_PAGE_INSTFILES
-	; Finish page
-	#!define MUI_FINISHPAGE_RUN "$INSTDIR\OpenTwin_local.bat"
-
-	!define MUI_TEXT_FINISH_INFO_TEXT "Installation complete. All programs and dependencies have been setup and installed successfully. Click on Finish to close the installer."
-
-	!insertmacro MUI_PAGE_FINISH
-
-	; Uninstaller pages
-	!insertmacro MUI_UNPAGE_INSTFILES
-
-	; Language files
-	!insertmacro MUI_LANGUAGE "English"
-; MUI end ------
-
-Name "${PRODUCT_NAME}"
-OutFile "Install OpenTwin.exe"
-InstallDir "$PROGRAMFILES\OpenTwin" ; = $INSTDIR
-InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
-ShowInstDetails hide
-ShowUnInstDetails hide
-
-Section "-Extract Installer Tools (Required)" SEC01
-	SectionIn RO ;read only section
-	SetOutPath "$INSTDIR\Tools\ThirdParty"
-	DetailPrint "Extracting toolchain..."
-	File /r "..\..\..\..\ThirdParty\Installer_Tools\ThirdParty\shared\*.*"
-	
-	DetailPrint "Extracting installation helper..."
-	SetOutPath "$INSTDIR\Tools\helper"
-	File /r "..\helper\*.*"
-
-	DetailPrint "Extracting javascript files..."
-	SetOutPath "$INSTDIR\Tools\javascript"
-	File /r "..\javascript\*.*"
-
-SectionEnd
-
-Section "OpenTwin Main Files (Required)" SEC02
-	SectionIn RO ;read only section
-	SetOutPath "$INSTDIR"
-	SetOverwrite ifnewer
-
-	DetailPrint "Extracting..."
-
-	File /r "..\..\..\Deployment\*.*"
-		#relative to script location
-		#    ".\" 	 = the script location itself
-		#    "..\" 	 = one directory up
-		#    "..\..\"  = two directories up etc.
-
-	${If} $PublicIpSet <> 0 #public IP was set
-		ExpandEnvStrings $0 %COMSPEC%
-			ExecWait '"$0" /c "START /WAIT /MIN cmd.exe /c ""$INSTDIR\Tools\ThirdParty\RefreshEnv.cmd" && cd "$INSTDIR\Certificates" && "$INSTDIR\Certificates\CreateServerCertificate.bat""" '
-	${Else}
-		Goto +2
-	${EndIf}
-
-	DetailPrint "Installing VC Redistributable..."
-	# The 32bit version is required for Apache
-	ExecWait '"$INSTDIR\Tools\ThirdParty\VC_redist.x86.exe" /silent'					
-	ExecWait '"$INSTDIR\Tools\ThirdParty\VC_redist.x64.exe" /silent'					
-
-	; Shortcuts
-	!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
-	CreateDirectory "$SMPROGRAMS\$ICONS_GROUP"
-	CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\OpenTwin.lnk" "$INSTDIR\OpenTwin_local.bat" "" ${OPENTWIN_APP_ICON}
-	CreateShortCut "$DESKTOP\OpenTwin.lnk" "$INSTDIR\OpenTwin_local.bat" "" ${OPENTWIN_APP_ICON}
-	!insertmacro MUI_STARTMENU_WRITE_END
-SectionEnd
-
-
-Section "MongoDB Setup" SEC03
-	AddSize 738000
-	; /i = package to install
-	; /qn = quiet install
-	; INSTALLLOCATION = install directory
-	
-	#this execwait would have to be enabled again if the custom install location can be used again
-	#ExecWait 'msiexec /l*v mdbinstall.log  /qb /i "$INSTDIR\Tools\mongodb-windows-x86_64-4.4.28-signed.msi" INSTALLLOCATION="$MONGODB_INSTALL_PATH" SHOULD_INSTALL_COMPASS="0" ADDLOCAL="ServerService,Client"'
-	
-	DetailPrint "Running MongoDB installation scripts..."
-
-	ExecWait 'msiexec /l*v mdbinstall.log  /qb /i "$INSTDIR\Tools\ThirdParty\mongodb-windows-x86_64-4.4.28-signed.msi" INSTALLLOCATION="$MONGODB_INSTALL_PATH" SHOULD_INSTALL_COMPASS="0" ADDLOCAL="ServerService,Client"'		
-	
-	nsExec::ExecToLog 'net stop "MongoDB"'	
-	
-	##########################################
-	# call for python scripts via $INSTDIR
-	##########################################
-
-	DetailPrint "Running scripts..."
-	# update the mongodB config file without authentication
-	ExecWait '"$INSTDIR\Tools\helper\ConfigMongoDBNoAuth.exe" "$MONGODB_INSTALL_PATH\bin\mongod.cfg" "$MONGODB_DB_PATH" "$MONGODB_LOG_PATH" $NetworkModeSelection'
-
-	#set directory permissions for the mongoDB service
-	ExecWait '"$INSTDIR\Tools\helper\SetPermissions.exe" "$MONGODB_DB_PATH" "$MONGODB_LOG_PATH"'
-
-	# restarting mongoDB service
-	nsExec::ExecToLog 'net start "MongoDB"'
-
-	# 'net' command waits for the service to be stopped/started automatically
-	# no additional checks needed
-
-	# call for js script to paste admin user creation
-	ExpandEnvStrings $0 %COMSPEC%
-		ExecWait '"$0" /c "START /WAIT /MIN cmd.exe /c " "$MONGODB_INSTALL_PATH\bin\mongo.exe" < "$INSTDIR\Tools\javascript\db_admin.js" " "'
-	
-	nsExec::ExecToLog 'net stop "MongoDB"'	
-
-	# mongoDB_storage_script_wauth.py
-	${If} $PublicIpSet <> 0
-		ExecWait '"$INSTDIR\Tools\helper\ConfigMongoDBWithAuth.exe" "$MONGODB_INSTALL_PATH\bin\mongod.cfg" "$PUBLIC_CERT_PATH\certificateKeyFile.pem" "$MONGODB_CUSTOM_PORT"'
-		ExpandEnvStrings $0 %COMSPEC%
-			ExecWait '"$0" /c "START /WAIT /MIN cmd.exe /c "certutil -addstore root "$PUBLIC_CERT_PATH\ca.pem"""" '	
-	${Else}
-		ExecWait '"$INSTDIR\Tools\helper\ConfigMongoDBWithAuth.exe" "$MONGODB_INSTALL_PATH\bin\mongod.cfg" "$DEFAULT_CERT_PATH\certificateKeyFile.pem" "$MONGODB_CUSTOM_PORT"'
-		ExpandEnvStrings $0 %COMSPEC%
-			ExecWait '"$0" /c "START /WAIT /MIN cmd.exe /c "certutil -addstore root "$DEFAULT_CERT_PATH\ca.pem"""" '
-	${EndIf}
-		
-	DetailPrint "Restart services..."
-	nsExec::ExecToLog 'net start "MongoDB"'	
-	
-	#DetailPrint "Wait..."
-	#Sleep 10000
-	
-SectionEnd
-
-Section -AdditionalIcons
-  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
-  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\Uninstall.lnk" "$INSTDIR\Uninstall_OpenTwin.exe" "" ${OPENTWIN_UNAPP_ICON}
-  !insertmacro MUI_STARTMENU_WRITE_END
-SectionEnd
-
-Section -Post
-	WriteUninstaller "$INSTDIR\Uninstall_OpenTwin.exe"
-	WriteRegStr HKLM "${PRODUCT_DIR_REGKEY}" "" "$INSTDIR\OpenTwin.exe"
-	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
-	WriteRegStr HKLM "${REGPATH_UNINSTSUBKEY}" "DisplayName" "${PRODUCT_NAME}"
-	WriteRegStr HKLM "${REGPATH_UNINSTSUBKEY}" "DisplayIcon" "$INSTDIR\OpenTwin.exe,0"
-	WriteRegStr HKLM "${REGPATH_UNINSTSUBKEY}" "UninstallString" '"$INSTDIR\Uninstall_OpenTwin.exe"'
-	WriteRegDWORD HKLM "${REGPATH_UNINSTSUBKEY}" "NoModify" 1
-	WriteRegDWORD HKLM "${REGPATH_UNINSTSUBKEY}" "NoRepair" 1
-
-SectionEnd
-
-#Section descriptions
-!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC02} "Install all required OpenTwin files"
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC03} "Install MongoDB and set up all configurations for OpenTwin"
-!insertmacro MUI_FUNCTION_DESCRIPTION_END
-
-
 
 #UNINSTALLER - non functional, unfinished
 Function un.onUninstSuccess
@@ -919,16 +971,73 @@ Function un.onUninstSuccess
   MessageBox MB_ICONINFORMATION|MB_OK "$(^Name) was successfully removed from your computer."
 FunctionEnd
 
-Function un.onInit
+Function un.onInit	
   	MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "Are you sure you want to completely remove $(^Name) and all of its components?" IDYES +1 IDNO AbortUninstall
   	MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "Do you also want to uninstall MongoDB and all of its components?" IDYES +1 IDNO +3
 	StrCpy $UNINSTALL_MONGODB_FLAG 1
-		Goto +5
+		Goto +4
 	StrCpy $UNINSTALL_MONGODB_FLAG 0
-		Goto +3
+		Goto +2
 AbortUninstall:
-  Abort
+    Abort
+ 			
+	SetRegView 32
+  	ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "UninstallString"
+	
+	Push $0
+	Call un.GetParent
+	Pop $R0 ; this is the installation directory
+	
+	StrCpy $1 "$R0" "" 1
+	
+	GetFullPathName $3 "$1\ShutdownAll.bat" 
+	SetOutPath "$1"
+						
+	ExecWait '"$3"'
 FunctionEnd
+
+#.onInit function to initialize any values that need initializing at the beginning of the script
+Function .onInit
+	#from front end installer
+	!insertmacro EnsureAdminRights
+		
+	ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "UninstallString"
+	
+	${If} $0 != ""
+	    MessageBox MB_YESNO|MB_ICONQUESTION "An OpenTwin installation was found. If you continue, the previous version will be removed.$\n$\nDo you really want to proceed?" /SD IDYES IDYES +2
+			Abort
+			
+		Push $0
+		Call GetParent
+		Pop $R0 ; this is the installation directory
+		
+		StrCpy $1 "$R0" "" 1
+
+		GetFullPathName $3 "$1\ShutdownAll.bat" 
+		SetOutPath "$1"
+						
+		ExecWait '"$3"'
+
+	    !insertmacro UninstallExisting $0 $0
+	    ${If} $0 <> 0
+			MessageBox MB_YESNO|MB_ICONSTOP "Failed to uninstall, continue anyway?" /SD IDYES IDYES +2
+				Abort
+		${EndIf}
+		
+		;$UNINSTALL_MONGODB_FLAG 1
+		!insertmacro UnSelectSection ${SEC03}
+		!insertmacro SetSectionFlag ${SEC03} ${SF_RO}
+
+	${EndIf}
+
+    StrCpy $PortReturnChecker 0
+	StrCpy $PublicIpSet 0
+	StrCpy $PublicCertPageChecker 0
+
+	StrCpy "$ROOTDIR" "$WINDIR" 2
+
+FunctionEnd
+
 
 Section Uninstall
 #Delete ALL env variables set by the installer

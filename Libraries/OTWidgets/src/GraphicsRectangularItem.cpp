@@ -5,19 +5,17 @@
 // ###########################################################################################################################################################################################################################################################################################################################
 
 // OpenTwin header
-#include "OTCore/KeyMap.h"
 #include "OTCore/Logger.h"
 #include "OTGui/GraphicsRectangularItemCfg.h"
+#include "OTWidgets/QtFactory.h"
+#include "OTWidgets/GraphicsItemFactory.h"
 #include "OTWidgets/GraphicsRectangularItem.h"
-#include "OTWidgets/Painter2DFactory.h"
-#include "OTWidgets/OTQtConverter.h"
 
 // Qt header
 #include <QtGui/qpainter.h>
 #include <QtGui/qevent.h>
 
-static ot::SimpleFactoryRegistrar<ot::GraphicsRectangularItem> rectItem(OT_SimpleFactoryJsonKeyValue_GraphicsRectangularItem);
-static ot::GlobalKeyMapRegistrar rectItemKey(OT_SimpleFactoryJsonKeyValue_GraphicsRectangularItemCfg, OT_SimpleFactoryJsonKeyValue_GraphicsRectangularItem);
+static ot::GraphicsItemFactoryRegistrar<ot::GraphicsRectangularItem> rectItemRegistrar(OT_FactoryKey_GraphicsRectangularItem);
 
 ot::GraphicsRectangularItem::GraphicsRectangularItem() 
 	: ot::CustomGraphicsItem(false), m_size(10, 10), m_cornerRadius(0)
@@ -46,11 +44,9 @@ bool ot::GraphicsRectangularItem::setupFromConfig(ot::GraphicsItemCfg* _cfg) {
 	m_size.setWidth(cfg->size().width());
 	m_size.setHeight(cfg->size().height());
 	m_cornerRadius = cfg->cornerRadius();
-	m_brush = ot::Painter2DFactory::brushFromPainter2D(cfg->backgroundPainter());
-	m_pen.setWidth(cfg->border().top()); // ToDo: Add seperate borders on all 4 sides
-	m_pen.setBrush(QBrush(ot::OTQtConverter::toQt(cfg->border().color())));
-	m_pen.setColor(ot::OTQtConverter::toQt(cfg->border().color()));
-
+	m_brush = QtFactory::toBrush(cfg->backgroundPainter());
+	m_pen = QtFactory::toPen(cfg->outline());
+	
 	// We call set rectangle size which will call set geometry to finalize the item
 	this->setRectangleSize(m_size);
 
@@ -62,9 +58,11 @@ bool ot::GraphicsRectangularItem::setupFromConfig(ot::GraphicsItemCfg* _cfg) {
 // Base class functions: ot::CustomGraphicsItem
 
 void ot::GraphicsRectangularItem::paintCustomItem(QPainter* _painter, const QStyleOptionGraphicsItem* _opt, QWidget* _widget, const QRectF& _rect) {
-	_painter->setBrush(m_brush);
+	QPainterPath pth;
+	pth.addRoundedRect(_rect, m_cornerRadius, m_cornerRadius);
 	_painter->setPen(m_pen);
-	_painter->drawRoundedRect(_rect, m_cornerRadius, m_cornerRadius);
+	_painter->fillPath(pth, m_brush);
+	_painter->drawPath(pth);
 }
 
 // ###########################################################################################################################################################################################################################################################################################################################
@@ -75,6 +73,6 @@ void ot::GraphicsRectangularItem::setRectangleSize(const QSizeF& _size) {
 	// Avoid resizing if the size did not change
 	if (m_size == _size) return;
 	m_size = _size;
-	this->setGeometry(QRectF(this->pos(), m_size).toRect());
+	this->setGeometry(QRectF(this->pos(), m_size));
 	this->raiseEvent(GraphicsItem::ItemResized);
 }

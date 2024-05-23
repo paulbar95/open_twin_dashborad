@@ -32,13 +32,13 @@ REM Shutdown the session and authorisation services if they are still running
 REM ===========================================================================
 
 REM Shutdown microservices
-taskkill /IM "open_twin.exe" /F
+taskkill /IM "open_twin.exe" /F 2> nul
 
 REM Shutdown ui
-taskkill /IM "uiFrontend.exe" /F
+taskkill /IM "uiFrontend.exe" /F 2> nul
 
 REM Shutdown Apache server
-taskkill /IM "httpd.exe" /F
+taskkill /IM "httpd.exe" /F 2> nul
 
 REM Clean up the Deployment directory
 RMDIR /S /Q "%OT_DEPLOYMENT_DIR%"
@@ -220,6 +220,9 @@ XCOPY /S "%APACHE_ROOT%\*.*" "%OT_DEPLOYMENT_DIR%\Apache"
 REM Documentation
 MKDIR "%OT_DEPLOYMENT_DIR%\Documentation"
 XCOPY /S "%OT_DOCUMENTATION_ROOT%\_build\html\*.*" "%OT_DEPLOYMENT_DIR%\Documentation"
+
+REM Shutdown Script
+COPY "%OPENTWIN_DEV_ROOT%\Scripts\BuildAndTest\ShutdownAll.bat" "%OT_DEPLOYMENT_DIR%"
 
 REM ===========================================================================
 REM Copy the build files

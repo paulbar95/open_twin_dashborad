@@ -10,6 +10,7 @@
 
 //ThirdPartyHeader
 #include <ngspice/sharedspice.h>
+//#include <ngspice/ngspice.h>
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -32,7 +33,7 @@ public:
 	std::string generateNetlistTRANSimulation(EntityBase* solverEntity, std::map<ot::UID, std::shared_ptr<EntityBlockConnection>>, std::map<ot::UID, std::shared_ptr<EntityBlock>>&, std::string editorname);
 	std::string ngSpice_Initialize(EntityBase* solverEntity,std::map<ot::UID, std::shared_ptr<EntityBlockConnection>>,std::map<ot::UID, std::shared_ptr<EntityBlock>>&,std::string);
 	void clearBufferStructure(std::string name); 
-	std::vector<std::string> getNodeNumbersOfVoltageMeter(std::string ,std::map<ot::UID, std::shared_ptr<EntityBlockConnection>>, std::map<ot::UID, std::shared_ptr<EntityBlock>>&);
+	void getNodeNumbersOfMeters(std::string ,std::map<ot::UID, std::shared_ptr<EntityBlockConnection>>, std::map<ot::UID, std::shared_ptr<EntityBlock>>&,std::vector<std::string>&);
 	bool isValidNodeString(const std::string& input);
 	//Result Curve Functions
 	

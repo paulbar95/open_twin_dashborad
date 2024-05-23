@@ -15,7 +15,13 @@
 #include "SimulationResults.h"
 #include "EntityBlockCircuitDiode.h"
 #include "EntityBlockCircuitVoltageMeter.h"
+#include "EntityBlockCircuitCurrentMeter.h"
+#include "EntityBlockCircuitCapacitor.h"
+#include "EntityBlockCircuitInductor.h"
 // Third Party Header
+
+//C++
+#include <algorithm>
 
 namespace NodeNumbers
 {
@@ -272,6 +278,18 @@ void BlockEntityHandler::InitSpecialisedCircuitElementEntity(std::shared_ptr<Ent
 	{
 		diode->createProperties();
 	}
+
+	EntityBlockCircuitCapacitor* capacitor = dynamic_cast<EntityBlockCircuitCapacitor*>(blockEntity.get());
+	if (capacitor != nullptr)
+	{
+		capacitor->createProperties();
+	}
+
+	EntityBlockCircuitInductor* inductor = dynamic_cast<EntityBlockCircuitInductor*>(blockEntity.get());
+	if (inductor != nullptr)
+	{
+		inductor->createProperties();
+	}
 	
 }
 
@@ -289,11 +307,17 @@ ot::GraphicsPickerCollectionPackage* BlockEntityHandler::BuildUpBlockPicker()
 	EntityBlockCircuitResistor resistor(0, nullptr, nullptr, nullptr, nullptr, "");
 	EntityBlockCircuitDiode diode(0, nullptr, nullptr, nullptr, nullptr, "");
 	EntityBlockCircuitVoltageMeter voltMeter(0, nullptr, nullptr, nullptr, nullptr, "");
+	EntityBlockCircuitCurrentMeter currentMeter(0, nullptr, nullptr, nullptr, nullptr, "");
+	EntityBlockCircuitCapacitor capacitor(0, nullptr, nullptr, nullptr, nullptr, "");
+	EntityBlockCircuitInductor inductor(0, nullptr, nullptr, nullptr, nullptr, "");
 
+	a1->addItem(capacitor.getClassName(), capacitor.CreateBlockHeadline(), "CircuitElementImages/Capacitor.png");
 	a1->addItem(element.getClassName(), element.CreateBlockHeadline(), "CircuitElementImages/VoltageSource.png");
 	a1->addItem(resistor.getClassName(), resistor.CreateBlockHeadline(), "CircuitElementImages/ResistorBG.png");
 	a1->addItem(diode.getClassName(), diode.CreateBlockHeadline(), "CircuitElementImages/Diod2.png");
 	a1->addItem(voltMeter.getClassName(), voltMeter.CreateBlockHeadline(), "CircuitElementImages/VoltMeter.png");
+	a1->addItem(currentMeter.getClassName(), currentMeter.CreateBlockHeadline(), "CircuitElementImages/CurrentMeter.png");
+	a1->addItem(inductor.getClassName(), inductor.CreateBlockHeadline(), "CircuitElementImages/Inductor.png");
 	pckg->addCollection(a);
 
 	
@@ -354,6 +378,24 @@ void BlockEntityHandler::createResultCurves(std::string solverName,std::string s
 		if (it != resultVectors.end())
 		{
 			resultVectors.erase(it);
+		}
+
+
+		//Here i want to delete the ediff vector from my Result beacuse i dont need it
+		while (true) {
+			
+			auto it2 = std::find_if(resultVectors.begin(), resultVectors.end(),
+				[&](const std::pair<const std::string, std::vector<double>>& element) {
+					return element.first.find("ediff") != std::string::npos;
+				});
+			if (it2 != resultVectors.end()) {
+				
+				resultVectors.erase(it2);
+			}
+			else {
+				
+				break;
+			}
 		}
 
 		std::string _curveFolderPath = solverName + "/" + circuitName + "/" + "1D/Curves";

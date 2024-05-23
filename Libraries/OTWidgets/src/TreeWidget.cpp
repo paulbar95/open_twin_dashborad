@@ -17,7 +17,7 @@ ot::TreeWidgetItemInfo::TreeWidgetItemInfo(const NavigationTreeItem& _config)
 	: m_text(QString::fromStdString(_config.text())), m_flags(_config.flags())
 {
 	if (!_config.iconPath().empty()) {
-		m_icon = IconManager::instance().getIcon(QString::fromStdString(_config.iconPath()));
+		m_icon = IconManager::getIcon(QString::fromStdString(_config.iconPath()));
 	}
 	
 	for (const NavigationTreeItem& child : _config.childItems()) {
@@ -67,17 +67,21 @@ ot::TreeWidget::~TreeWidget() {
 
 }
 
-void ot::TreeWidget::mousePressEvent(QMouseEvent* _event) {
-	QTreeWidget::mousePressEvent(_event);
-}
+// ###########################################################################################################################################################################################################################################################################################################################
 
-void ot::TreeWidget::drawRow(QPainter* _painter, const QStyleOptionViewItem& _options, const QModelIndex& _index) const {
-	QTreeWidget::drawRow(_painter, _options, _index);
-}
+// Setter / Getter
 
 QTreeWidgetItem* ot::TreeWidget::findItem(const QString& _itemPath, char _delimiter) const {
 	QStringList lst = _itemPath.split(_delimiter, Qt::SkipEmptyParts);
 	return this->findItem(this->invisibleRootItem(), lst);
+}
+
+bool ot::TreeWidget::itemTextExists(const QString& _itemText) const {
+	for (int i = 0; i < this->topLevelItemCount(); i++) {
+		if (this->topLevelItem(i)->text(0) == _itemText) return true;
+		if (this->itemTextExists(this->topLevelItem(i), _itemText)) return true;
+	}
+	return false;
 }
 
 QString ot::TreeWidget::itemPath(QTreeWidgetItem* _item, char _delimiter) const {
@@ -99,6 +103,31 @@ QTreeWidgetItem* ot::TreeWidget::addItem(const TreeWidgetItemInfo& _item) {
 	return this->addItem(this->invisibleRootItem(), _item);
 }
 
+// ###########################################################################################################################################################################################################################################################################################################################
+
+// Event handler
+
+void ot::TreeWidget::mousePressEvent(QMouseEvent* _event) {
+	QTreeWidget::mousePressEvent(_event);
+}
+
+void ot::TreeWidget::drawRow(QPainter* _painter, const QStyleOptionViewItem& _options, const QModelIndex& _index) const {
+	QTreeWidget::drawRow(_painter, _options, _index);
+}
+
+// ###########################################################################################################################################################################################################################################################################################################################
+
+// Protected: Helper
+
+bool ot::TreeWidget::itemTextExists(QTreeWidgetItem* _parent, const QString& _itemText) const {
+	OTAssertNullptr(_parent);
+	for (int i = 0; i < _parent->childCount(); i++) {
+		if (_parent->child(i)->text(0) == _itemText) return true;
+		if (this->itemTextExists(_parent->child(i), _itemText)) return true;
+	}
+	return false;
+}
+
 QTreeWidgetItem* ot::TreeWidget::findItem(QTreeWidgetItem* _item, const QStringList& _childPath) const {
 	if (_childPath.isEmpty()) return nullptr;
 
@@ -118,20 +147,20 @@ QTreeWidgetItem* ot::TreeWidget::findItem(QTreeWidgetItem* _item, const QStringL
 	return nullptr;
 }
 
-QTreeWidgetItem* ot::TreeWidget::addItem(QTreeWidgetItem* _parent, const TreeWidgetItemInfo& _item) {
+QTreeWidgetItem* ot::TreeWidget::findItemText(QTreeWidgetItem* _parent, const QString& _itemText) const {
+	OTAssertNullptr(_parent);
+	QTreeWidgetItem* ret = nullptr;
 	for (int i = 0; i < _parent->childCount(); i++) {
-		if (_parent->child(i)->text(0) == _item.text()) {
-			for (const TreeWidgetItemInfo& child : _item.childItems()) {
-				this->addItem(_parent->child(i), child);
-			}
-			return _parent->child(i);
-		}
+		if (_parent->child(i)->text(0) == _itemText) return _parent->child(i);
+		ret = this->findItemText(_parent->child(i), _itemText);
+		if (ret) return ret;
 	}
-
-	TreeWidgetItem* newItem = new TreeWidgetItem(_item);
-	_parent->addChild(newItem);
-	return newItem;
+	return ret;
 }
+
+// ###########################################################################################################################################################################################################################################################################################################################
+
+// Private: Slots
 
 void ot::TreeWidget::slotColorStyleAboutToChange(void) {
 	m_columnWidths.clear();
@@ -148,6 +177,25 @@ void ot::TreeWidget::slotColorStyleChanged(const ColorStyle& _style) {
 	for (int w : m_columnWidths) {
 		this->setColumnWidth(i++, w);
 	}
+}
+
+// ###########################################################################################################################################################################################################################################################################################################################
+
+// Private: Helper
+
+QTreeWidgetItem* ot::TreeWidget::addItem(QTreeWidgetItem* _parent, const TreeWidgetItemInfo& _item) {
+	for (int i = 0; i < _parent->childCount(); i++) {
+		if (_parent->child(i)->text(0) == _item.text()) {
+			for (const TreeWidgetItemInfo& child : _item.childItems()) {
+				this->addItem(_parent->child(i), child);
+			}
+			return _parent->child(i);
+		}
+	}
+
+	TreeWidgetItem* newItem = new TreeWidgetItem(_item);
+	_parent->addChild(newItem);
+	return newItem;
 }
 
 // ###########################################################################################################################################################################################################################################################################################################################

@@ -5,6 +5,7 @@
 
 // OpenTwin header
 #include "OTCore/Logger.h"
+#include "OTGui/GraphicsItemCfgFactory.h"
 #include "OTGui/GraphicsBoxLayoutItemCfg.h"
 
 #define OT_JSON_MEMBER_Item "Item"
@@ -62,14 +63,11 @@ void ot::GraphicsBoxLayoutItemCfg::setFromJsonObject(const ConstJsonObject& _obj
 			GraphicsItemCfg* itm = nullptr;
 			try {
 				ConstJsonObject itemObj = json::getObject(pairObj, OT_JSON_MEMBER_Item);
-				itm = ot::SimpleFactory::instance().createType<GraphicsItemCfg>(itemObj);
-				if (itm) {
-					itm->setFromJsonObject(itemObj);
-					m_items.push_back(itemStrechPair_t(itm, json::getInt(pairObj, OT_JSON_MEMBER_Stretch)));
+				itm = GraphicsItemCfgFactory::instance().create(itemObj);
+				if (!itm) {
+					continue;
 				}
-				else {
-					OT_LOG_EA("Factory failed");
-				}
+				m_items.push_back(itemStrechPair_t(itm, json::getInt(pairObj, OT_JSON_MEMBER_Stretch)));
 			}
 			catch (const std::exception& _e) {
 				OT_LOG_E("Error occured");
@@ -100,6 +98,29 @@ void ot::GraphicsBoxLayoutItemCfg::addChildItem(ot::GraphicsItemCfg* _item, int 
 void ot::GraphicsBoxLayoutItemCfg::addStrech(int _stretch) {
 	OTAssert(_stretch > 0, "Stretch should be greater than 0");
 	m_items.push_back(itemStrechPair_t(nullptr, _stretch));
+}
+
+void ot::GraphicsBoxLayoutItemCfg::setupData(GraphicsItemCfg* _config) const {
+	ot::GraphicsLayoutItemCfg::setupData(_config);
+
+	GraphicsBoxLayoutItemCfg* cfg = dynamic_cast<GraphicsBoxLayoutItemCfg*>(_config);
+	if (!cfg) {
+		OT_LOG_EA("Configuration cast failed");
+		return;
+	}
+
+	cfg->m_orientation = m_orientation;
+	for (const itemStrechPair_t& itm : m_items) {
+		itemStrechPair_t newEntry;
+		newEntry.second = itm.second;
+		if (itm.first) {
+			newEntry.first = itm.first->createCopy();
+		}
+		else {
+			newEntry.first = nullptr;
+		}
+		cfg->m_items.push_back(newEntry);
+	}
 }
 
 void ot::GraphicsBoxLayoutItemCfg::clearItems(void) {

@@ -16,7 +16,7 @@
 
 namespace ot {
 
-	class OT_GUI_API_EXPORTONLY GraphicsLayoutItemCfg : public GraphicsItemCfg {
+	class OT_GUI_API_EXPORT GraphicsLayoutItemCfg : public GraphicsItemCfg {
 	public:
 		GraphicsLayoutItemCfg() {};
 		virtual ~GraphicsLayoutItemCfg();
@@ -32,9 +32,14 @@ namespace ot {
 		virtual void setFromJsonObject(const ConstJsonObject& _object) override;
 
 		virtual void addChildItem(ot::GraphicsItemCfg* _item) = 0;
+		
+		// ###########################################################################################################################################################################################################################################################################################################################
+
+		// Protected: Helper
 
 	protected:
-		
+		virtual void setupData(GraphicsItemCfg* _config) const;
+
 	private:
 		GraphicsLayoutItemCfg(const GraphicsLayoutItemCfg&) = delete;
 		GraphicsLayoutItemCfg& operator = (const GraphicsLayoutItemCfg&) = delete;

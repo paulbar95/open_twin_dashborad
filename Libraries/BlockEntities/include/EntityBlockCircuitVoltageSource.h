@@ -10,7 +10,11 @@ class __declspec(dllexport) EntityBlockCircuitVoltageSource : public EntityBlock
 		std::string getElementType();
 		std::string getType();
 		std::string getFunction();
-		
+
+		std::vector<std::string> getPulseParameters();
+		std::vector<std::string> getSinParameters();
+		std::vector<std::string> getExpParameters();
+
 		virtual ot::GraphicsItemCfg* CreateBlockCfg() override;
 		virtual bool updateFromProperties(void) override;
 		const ot::Connector getLeftConnector() const { return m_LeftConnector; }
@@ -21,8 +25,15 @@ class __declspec(dllexport) EntityBlockCircuitVoltageSource : public EntityBlock
 		ot::Connector m_LeftConnector;
 		ot::Connector m_RightConnector;
 		void createACProperties();
-		bool SetVisibleACProperties(bool visible);
+		void createPULSEProperties();
+		void createSINProperties();
+		void createEXPProperties();
 
+
+		bool SetVisibleACProperties(bool visible);
+		bool SetVisiblePULSEProperties(bool visible);
+		bool SetVisibleSINProperties(bool visible);
+		bool SetVisibleEXPProperties(bool visible);
 		void AddStorageData(bsoncxx::builder::basic::document& storage) override;
 		void readSpecificDataFromDataBase(bsoncxx::document::view& doc_view, std::map<ot::UID, EntityBase*>& entityMap) override;
 

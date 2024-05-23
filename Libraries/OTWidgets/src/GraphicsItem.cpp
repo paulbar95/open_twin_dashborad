@@ -5,16 +5,14 @@
 // ###########################################################################################################################################################################################################################################################################################################################
 
 // OpenTwin header
-#include "OTCore/KeyMap.h"
 #include "OTCore/Logger.h"
 #include "OTGui/GraphicsItemCfg.h"
 #include "OTWidgets/IconManager.h"
+#include "OTWidgets/Positioning.h"
 #include "OTWidgets/GraphicsView.h"
 #include "OTWidgets/GraphicsItem.h"
 #include "OTWidgets/GraphicsScene.h"
 #include "OTWidgets/ToolTipHandler.h"
-#include "OTWidgets/GraphicsFactory.h"
-#include "OTWidgets/Painter2DFactory.h"
 #include "OTWidgets/GraphicsStackItem.h"
 #include "OTWidgets/GraphicsHighlightItem.h"
 #include "OTWidgets/GraphicsConnectionItem.h"
@@ -33,61 +31,12 @@
 
 // ###########################################################################################################################################################################################################################################################################################################################
 
-// Static functions
-
-QRectF ot::GraphicsItem::calculateInnerRect(const QRectF& _outerRect, const QSizeF& _innerSize, ot::Alignment _alignment) {
-	// Get the top left point of the outer rectangle
-	QPointF pt(_outerRect.topLeft());
-
-	// Align inner rectangle
-	switch (_alignment)
-	{
-	case ot::AlignCenter:
-		pt.setX(pt.x() + ((_outerRect.width() - _innerSize.width()) / 2.));
-		pt.setY(pt.y() + ((_outerRect.height() - _innerSize.height()) / 2.));
-		break;
-	case ot::AlignTop:
-		pt.setX(pt.x() + ((_outerRect.width() - _innerSize.width()) / 2.));
-		break;
-	case ot::AlignTopRight:
-		pt.setX(pt.x() + (_outerRect.width() - _innerSize.width()));
-		break;
-	case ot::AlignRight:
-		pt.setX(pt.x() + (_outerRect.width() - _innerSize.width()));
-		pt.setY(pt.y() + ((_outerRect.height() - _innerSize.height()) / 2.));
-		break;
-	case ot::AlignBottomRight:
-		pt.setX(pt.x() + (_outerRect.width() - _innerSize.width()));
-		pt.setY(pt.y() + (_outerRect.height() - _innerSize.height()));
-		break;
-	case ot::AlignBottom:
-		pt.setX(pt.x() + ((_outerRect.width() - _innerSize.width()) / 2.));
-		pt.setY(pt.y() + (_outerRect.height() - _innerSize.height()));
-		break;
-	case ot::AlignBottomLeft:
-		pt.setY(pt.y() + (_outerRect.height() - _innerSize.height()));
-		break;
-	case ot::AlignLeft:
-		pt.setY(pt.y() + ((_outerRect.height() - _innerSize.height()) / 2.));
-		break;
-	case ot::AlignTopLeft:
-		break;
-	default:
-		OT_LOG_EA("Unknown Alignment");
-		break;
-	}
-
-	return QRectF(pt, _innerSize);
-}
-
-// ###########################################################################################################################################################################################################################################################################################################################
-
 // Constructor / Destructor
 
 ot::GraphicsItem::GraphicsItem(bool _isLayoutOrStack)
 	: m_flags(GraphicsItemCfg::NoFlags), m_parent(nullptr), m_isLayoutOrStack(_isLayoutOrStack), 
 	m_state(NoState), m_scene(nullptr), m_alignment(ot::AlignCenter), m_minSize(0., 0.), m_maxSize(DBL_MAX, DBL_MAX),
-	m_sizePolicy(ot::Preferred), m_requestedSize(-1., -1.), m_connectionDirection(ot::ConnectAny), m_uid(0), m_highlightItem(nullptr)
+	m_sizePolicy(ot::Preferred), m_requestedSize(-1., -1.), m_connectionDirection(ot::ConnectAny), m_uid(0), m_highlightItem(nullptr), m_config(nullptr)
 {
 
 }
@@ -101,6 +50,14 @@ ot::GraphicsItem::~GraphicsItem() {
 // Virtual functions
 
 bool ot::GraphicsItem::setupFromConfig(ot::GraphicsItemCfg* _cfg) {
+	OTAssertNullptr(_cfg);
+	
+	if (m_config != _cfg) {
+		if (m_config) delete m_config;
+		m_config = nullptr;
+		m_config = _cfg->createCopy();
+	}
+
 	m_uid = _cfg->uid();
 	m_toolTip = _cfg->toolTip();	
 	m_alignment = _cfg->alignment();
@@ -203,6 +160,10 @@ void ot::GraphicsItem::handleMouseReleaseEvent(QGraphicsSceneMouseEvent* _event)
 
 void ot::GraphicsItem::handleHoverEnterEvent(QGraphicsSceneHoverEvent* _event) {
 	this->handleToolTip(_event);
+	if (m_flags & GraphicsItemCfg::ItemHasNoFeedback) {
+		return;
+	}
+
 	this->m_state |= GraphicsItem::HoverState;
 	this->getQGraphicsItem()->update();
 	if (m_highlightItem) {
@@ -230,7 +191,8 @@ void ot::GraphicsItem::handleHoverLeaveEvent(QGraphicsSceneHoverEvent* _event) {
 }
 
 void ot::GraphicsItem::paintStateBackground(QPainter* _painter, const QStyleOptionGraphicsItem* _opt, QWidget* _widget) {
-	
+	if (m_flags & GraphicsItemCfg::ItemHasNoFeedback) return;
+
 	if (m_state & HoverState) {
 		QPen p(QColor(0, 0, 255));
 		_painter->setPen(p);
@@ -418,7 +380,7 @@ QRectF ot::GraphicsItem::calculatePaintArea(const QSizeF& _innerSize) {
 	}
 	else {
 		// Calculate the inner rectangle
-		return this->calculateInnerRect(r, inner, m_alignment);
+		return ot::calculateChildRect(r, inner, m_alignment);
 	}
 }
 

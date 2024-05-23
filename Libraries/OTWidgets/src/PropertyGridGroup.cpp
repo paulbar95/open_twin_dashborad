@@ -5,14 +5,14 @@
 
 // OpenTwin header
 #include "OTCore/Logger.h"
-#include "OTCore/PropertyGroup.h"
+#include "OTGui/PropertyGroup.h"
+#include "OTWidgets/QtFactory.h"
 #include "OTWidgets/TreeWidget.h"
 #include "OTWidgets/PropertyInput.h"
 #include "OTWidgets/ColorStyleTypes.h"
 #include "OTWidgets/PropertyGridItem.h"
 #include "OTWidgets/GlobalColorStyle.h"
 #include "OTWidgets/PropertyGridGroup.h"
-#include "OTWidgets/OTQtConverter.h"
 
 // Qt header
 #include <QtWidgets/qlabel.h>
@@ -53,8 +53,8 @@ ot::PropertyGridGroup::~PropertyGridGroup() {
 
 void ot::PropertyGridGroup::setupFromConfig(const PropertyGroup* _group) {
 	m_name = _group->name();
-	m_groupColor = OTQtConverter::toQt(_group->backgroundColor());
-	m_groupAlternateColor = OTQtConverter::toQt(_group->alternateBackgroundColor());
+	m_groupColor = QtFactory::toColor(_group->backgroundColor());
+	m_groupAlternateColor = QtFactory::toColor(_group->alternateBackgroundColor());
 
 	m_titleLabel->setText(QString::fromStdString(_group->title()));
 

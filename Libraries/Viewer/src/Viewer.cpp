@@ -18,6 +18,8 @@
 #include "OTServiceFoundation/SettingsData.h"
 #include "OTCore/OTAssert.h"
 
+#include "OTWidgets/GlobalColorStyle.h"
+
 #include <qobject.h>
 #include <qwindow.h>
 
@@ -238,6 +240,14 @@ Viewer::Viewer(ot::UID modelID, ot::UID viewerID, double sw, double sh, int back
 	setLightSourceDistance(ViewerSettings::instance()->geometryLightSourceDistance);
 
 	reset();
+
+	this->connect(&ot::GlobalColorStyle::instance(), &ot::GlobalColorStyle::currentStyleChanged, this, &Viewer::slotColorStyleChanged);
+}
+
+void Viewer::slotColorStyleChanged(const ot::ColorStyle& _style) 
+{
+	setClearColorAutomatic();
+	refresh();
 }
 
 Viewer::~Viewer()
@@ -424,14 +434,21 @@ void Viewer::setClearColorAutomatic(void)
 {
 	if (ViewerSettings::instance()->viewBackgroundColorAutomatic)
 	{
+		ot::ColorStyleValue backColor = ot::GlobalColorStyle::instance().getCurrentStyle().getValue("Window Background");
+		ot::ColorStyleValue frontColor = ot::GlobalColorStyle::instance().getCurrentStyle().getValue("Window Foreground");
+
+		viewColorAutoBackgroundR = backColor.color().red();
+		viewColorAutoBackgroundG = backColor.color().green();
+		viewColorAutoBackgroundB = backColor.color().blue();
+
 		setClearColor(viewColorAutoBackgroundR, viewColorAutoBackgroundG, viewColorAutoBackgroundB, 
-				      ViewerSettings::instance()->axisCenterColor.r() * 255, ViewerSettings::instance()->axisCenterColor.g() * 255, ViewerSettings::instance()->axisCenterColor.b() * 255);
+			          frontColor.color().red(), frontColor.color().green(), frontColor.color().blue());
 	}
 	else
 	{
 		// Set the view background color
-		setClearColor(ViewerSettings::instance()->viewBackgroundColor.r() * 255, ViewerSettings::instance()->viewBackgroundColor.g() * 255, ViewerSettings::instance()->viewBackgroundColor.b() * 255, 
-					  ViewerSettings::instance()->viewForegroundColor.r() * 255, ViewerSettings::instance()->viewForegroundColor.g() * 255, ViewerSettings::instance()->viewForegroundColor.b() * 255);
+		setClearColor(ViewerSettings::instance()->viewBackgroundColor.r(), ViewerSettings::instance()->viewBackgroundColor.g(), ViewerSettings::instance()->viewBackgroundColor.b(), 
+					  ViewerSettings::instance()->viewForegroundColor.r(), ViewerSettings::instance()->viewForegroundColor.g(), ViewerSettings::instance()->viewForegroundColor.b());
 	}
 
 	refresh();

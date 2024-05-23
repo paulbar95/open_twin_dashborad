@@ -20,7 +20,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\OTGui\Border.h" />
+    <ClInclude Include="include\OTGui\GraphicsGroupItemCfg.h" />
+    <ClInclude Include="include\OTGui\GraphicsItemCfgFactory.h" />
+    <ClInclude Include="include\OTGui\GraphicsLineItemCfg.h" />
+    <ClInclude Include="include\OTGui\GraphicsPolygonItemCfg.h" />
+    <ClInclude Include="include\OTGui\GraphicsShapeItemCfg.h" />
     <ClInclude Include="include\OTGui\KeySequence.h" />
+    <ClInclude Include="include\OTGui\Outline.h" />
     <ClInclude Include="include\OTGui\MessageDialogCfg.h" />
     <ClInclude Include="include\OTGui\DialogCfg.h" />
     <ClInclude Include="include\OTGui\FillPainter2D.h" />
@@ -51,11 +57,29 @@
     <ClInclude Include="include\OTGui\OnePropertyDialogCfg.h" />
     <ClInclude Include="include\OTGui\OTGuiAPIExport.h" />
     <ClInclude Include="include\OTGui\Painter2D.h" />
+    <ClInclude Include="include\OTGui\Painter2DFactory.h" />
+    <ClInclude Include="include\OTGui\Path2D.h" />
     <ClInclude Include="include\OTGui\PlainTextEditViewCfg.h" />
+    <ClInclude Include="include\OTGui\Property.h" />
+    <ClInclude Include="include\OTGui\PropertyBase.h" />
+    <ClInclude Include="include\OTGui\PropertyBool.h" />
+    <ClInclude Include="include\OTGui\PropertyColor.h" />
     <ClInclude Include="include\OTGui\PropertyDialogCfg.h" />
+    <ClInclude Include="include\OTGui\PropertyDirectory.h" />
+    <ClInclude Include="include\OTGui\PropertyDouble.h" />
+    <ClInclude Include="include\OTGui\PropertyFactory.h" />
+    <ClInclude Include="include\OTGui\PropertyFactoryRegistrar.h" />
+    <ClInclude Include="include\OTGui\PropertyFactoryRegistrar.hpp" />
+    <ClInclude Include="include\OTGui\PropertyFilePath.h" />
+    <ClInclude Include="include\OTGui\PropertyGridCfg.h" />
+    <ClInclude Include="include\OTGui\PropertyGroup.h" />
+    <ClInclude Include="include\OTGui\PropertyInt.h" />
     <ClInclude Include="include\OTGui\PropertyPainter2D.h" />
+    <ClInclude Include="include\OTGui\PropertyString.h" />
+    <ClInclude Include="include\OTGui\PropertyStringList.h" />
     <ClInclude Include="include\OTGui\RadialGradientPainter2D.h" />
     <ClInclude Include="include\OTGui\SelectEntitiesDialogCfg.h" />
+    <ClInclude Include="include\OTGui\StyleRefPainter2D.h" />
     <ClInclude Include="include\OTGui\StyleValue.h" />
     <ClInclude Include="include\OTGui\WidgetViewBase.h" />
     <ClInclude Include="include\OTGui\WidgetViewCfg.h" />
@@ -65,7 +89,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Border.cpp" />
+    <ClCompile Include="src\GraphicsGroupItemCfg.cpp" />
+    <ClCompile Include="src\GraphicsItemCfgFactory.cpp" />
+    <ClCompile Include="src\GraphicsLineItemCfg.cpp" />
+    <ClCompile Include="src\GraphicsPolygonItemCfg.cpp" />
+    <ClCompile Include="src\GraphicsShapeItemCfg.cpp" />
     <ClCompile Include="src\KeySequence.cpp" />
+    <ClCompile Include="src\Outline.cpp" />
     <ClCompile Include="src\MessageDialogCfg.cpp" />
     <ClCompile Include="src\DialogCfg.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
@@ -96,11 +126,27 @@
     <ClCompile Include="src\NavigationTreePackage.cpp" />
     <ClCompile Include="src\OnePropertyDialogCfg.cpp" />
     <ClCompile Include="src\Painter2D.cpp" />
+    <ClCompile Include="src\Painter2DFactory.cpp" />
+    <ClCompile Include="src\Path2D.cpp" />
     <ClCompile Include="src\PlainTextEditViewCfg.cpp" />
+    <ClCompile Include="src\Property.cpp" />
+    <ClCompile Include="src\PropertyBase.cpp" />
+    <ClCompile Include="src\PropertyBool.cpp" />
+    <ClCompile Include="src\PropertyColor.cpp" />
     <ClCompile Include="src\PropertyDialogCfg.cpp" />
+    <ClCompile Include="src\PropertyDirectory.cpp" />
+    <ClCompile Include="src\PropertyDouble.cpp" />
+    <ClCompile Include="src\PropertyFactory.cpp" />
+    <ClCompile Include="src\PropertyFilePath.cpp" />
+    <ClCompile Include="src\PropertyGridCfg.cpp" />
+    <ClCompile Include="src\PropertyGroup.cpp" />
+    <ClCompile Include="src\PropertyInt.cpp" />
     <ClCompile Include="src\PropertyPainter2D.cpp" />
+    <ClCompile Include="src\PropertyString.cpp" />
+    <ClCompile Include="src\PropertyStringList.cpp" />
     <ClCompile Include="src\RadialGradientPainter2D.cpp" />
     <ClCompile Include="src\SelectEntitiesDialogCfg.cpp" />
+    <ClCompile Include="src\StyleRefPainter2D.cpp" />
     <ClCompile Include="src\StyleValue.cpp" />
     <ClCompile Include="src\WidgetViewBase.cpp" />
     <ClCompile Include="src\WidgetViewCfg.cpp" />
@@ -188,6 +234,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(OT_GUI_ROOT)\$(OT_INC);$(OT_SYSTEM_ROOT)\$(OT_INC);$(OT_CORE_ROOT)\$(OT_INC);$(R_JSON_INCD);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -207,6 +254,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(OT_GUI_ROOT)\$(OT_INC);$(OT_SYSTEM_ROOT)\$(OT_INC);$(OT_CORE_ROOT)\$(OT_INC);$(R_JSON_INCD);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -228,6 +276,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(OT_GUI_ROOT)\$(OT_INC);$(OT_SYSTEM_ROOT)\$(OT_INC);$(OT_CORE_ROOT)\$(OT_INC);$(R_JSON_INCR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -251,6 +300,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(OT_GUI_ROOT)\$(OT_INC);$(OT_SYSTEM_ROOT)\$(OT_INC);$(OT_CORE_ROOT)\$(OT_INC);$(R_JSON_INCR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

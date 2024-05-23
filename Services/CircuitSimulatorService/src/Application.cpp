@@ -98,16 +98,16 @@ namespace ottest
 
 		ot::GraphicsEllipseItemCfg* connection1 = new ot::GraphicsEllipseItemCfg();
 		connection1->setName("Input3");
-		ot::FillPainter2D* painter1 = new ot::FillPainter2D(ot::Color(ot::Color::DefaultColor::Blue));
-		connection1->setBorder(ot::Border(ot::Color(ot::Color::Black), 1));
+		ot::FillPainter2D* painter1 = new ot::FillPainter2D(ot::Color(ot::Blue));
+		connection1->setOutline(ot::OutlineF(1., ot::Color(ot::Black)));
 		connection1->setBackgroundPainer(painter1);
 		connection1->setAlignment(ot::AlignCenter);
 		connection1->setMaximumSize(ot::Size2DD(10.0, 10.0));
 
 		ot::GraphicsEllipseItemCfg* connection2 = new ot::GraphicsEllipseItemCfg();
 		connection2->setName("Ouput3");
-		ot::FillPainter2D* painter2 = new ot::FillPainter2D(ot::Color(ot::Color::DefaultColor::Blue));
-		connection2->setBorder(ot::Border(ot::Color(ot::Color::Black), 1));
+		ot::FillPainter2D* painter2 = new ot::FillPainter2D(ot::Color(ot::Blue));
+		connection2->setOutline(ot::OutlineF(1., ot::Color(ot::Black)));
 		connection2->setBackgroundPainer(painter2);
 		connection2->setAlignment(ot::AlignCenter);
 		connection2->setMaximumSize(ot::Size2DD(10.0, 10.0));
@@ -143,8 +143,8 @@ namespace ottest
 
 		ot::GraphicsEllipseItemCfg* base = new ot::GraphicsEllipseItemCfg();
 		base->setName("base");
-		ot::FillPainter2D* painter1 = new ot::FillPainter2D(ot::Color(ot::Color::DefaultColor::Blue));
-		base->setBorder(ot::Border(ot::Color(ot::Color::Black), 1));
+		ot::FillPainter2D* painter1 = new ot::FillPainter2D(ot::Color(ot::Blue));
+		base->setOutline(ot::OutlineF(1., ot::Color(ot::Black)));
 		base->setBackgroundPainer(painter1);
 		base->setAlignment(ot::AlignLeft);
 		base->setMaximumSize(ot::Size2DD(10.0, 10.0));
@@ -153,8 +153,8 @@ namespace ottest
 
 		ot::GraphicsEllipseItemCfg* collector = new ot::GraphicsEllipseItemCfg();
 		collector->setName("collector");
-		ot::FillPainter2D* painter2 = new ot::FillPainter2D(ot::Color(ot::Color::DefaultColor::Blue));
-		collector->setBorder(ot::Border(ot::Color(ot::Color::Black), 1));
+		ot::FillPainter2D* painter2 = new ot::FillPainter2D(ot::Color(ot::Blue));
+		collector->setOutline(ot::OutlineF(1., ot::Color(ot::Black)));
 		collector->setBackgroundPainer(painter2);
 		collector->setAlignment(ot::AlignTop);
 		collector->setMaximumSize(ot::Size2DD(10.0, 10.0));
@@ -163,8 +163,8 @@ namespace ottest
 
 		ot::GraphicsEllipseItemCfg* emitter = new ot::GraphicsEllipseItemCfg();
 		emitter->setName("emitter");
-		ot::FillPainter2D* painter3 = new ot::FillPainter2D(ot::Color(ot::Color::DefaultColor::Blue));
-		emitter->setBorder(ot::Border(ot::Color(ot::Color::Black), 1));
+		ot::FillPainter2D* painter3 = new ot::FillPainter2D(ot::Color(ot::Blue));
+		emitter->setOutline(ot::OutlineF(1., ot::Color(ot::Black)));
 		emitter->setBackgroundPainer(painter3);
 		emitter->setAlignment(ot::AlignBottom);
 		emitter->setMaximumSize(ot::Size2DD(10.0, 10.0));
@@ -232,7 +232,7 @@ std::string Application::handleExecuteModelAction(ot::JsonDocument& _document)
 	{
 		addSolver();
 	}
-	else if (action == "Circuit Simulator:Simulate:New Simulation")
+	else if (action == "Circuit Simulator:Simulate:Run Simulation")
 	{
 		runCircuitSimulation();
 		
@@ -251,9 +251,18 @@ std::string Application::handleExecuteModelAction(ot::JsonDocument& _document)
 // Trying to create more circuits
 void Application::createNewCircuit()
 {
+	std::list<std::string> circuits = m_modelComponent->getListOfFolderItems("Circuits");
 
-	std::string circuitName = "Circuit " + std::to_string(ottest::currentEditorID);
+	int count = 1;
+	std::string circuitName;
+	do
+	{
+		circuitName = "Circuits/Circuit " + std::to_string(count);
+		count++;
+	} while (std::find(circuits.begin(), circuits.end(), circuitName) != circuits.end());
 
+	//std::string circuitName = "Circuit " + std::to_string(ottest::currentEditorID);
+	circuitName = extractStringAfterDelimiter(circuitName, '/', 1);
 	
 	ot::GraphicsNewEditorPackage* editor = new ot::GraphicsNewEditorPackage(circuitName, circuitName);
 	ot::JsonDocument doc;
@@ -294,11 +303,11 @@ void Application::modelSelectionChangedNotification(void)
 
 		if (selectedEntities.size() > 0)
 		{
-			enabled.push_back("Circuit Simulator:Simulate:New Simulation");
+			enabled.push_back("Circuit Simulator:Simulate:Run Simulation");
 		}
 		else
 		{
-			disabled.push_back("Circuit Simulator:Simulate:New Simulation");
+			disabled.push_back("Circuit Simulator:Simulate:Run Simulation");
 		}
 
 		m_uiComponent->setControlsEnabledState(enabled, disabled);
@@ -742,7 +751,7 @@ void Application::uiConnected(ot::components::UiComponent * _ui)
 	_ui->addMenuGroup("Circuit Simulator", "Edit");
 	_ui->addMenuGroup("Circuit Simulator", "Simulate");
 	_ui->addMenuButton("Circuit Simulator", "Edit","Add Solver", "Add Solver", ot::LockModelWrite | ot::LockViewRead | ot::LockViewWrite, "Add","Default");
-	_ui->addMenuButton("Circuit Simulator","Simulate","New Simulation","New Simulation", ot::LockModelWrite | ot::LockViewRead | ot::LockViewWrite, "Kriging", "Default");
+	_ui->addMenuButton("Circuit Simulator","Simulate","Run Simulation","Run Simulation", ot::LockModelWrite | ot::LockViewRead | ot::LockViewWrite, "Kriging", "Default");
 	_ui->addMenuButton("Circuit Simulator", "Edit", "Add Circuit", "Add Circuit", ot::LockModelWrite | ot::LockViewRead | ot::LockViewWrite, "Add", "Default");
 
 	m_blockEntityHandler.setUIComponent(_ui);

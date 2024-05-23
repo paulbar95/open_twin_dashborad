@@ -6,18 +6,30 @@
 
 // OpenTwin header
 #include "OTGui/GraphicsImageItemCfg.h"
+#include "OTGui/GraphicsItemCfgFactory.h"
 
 #define OT_JSON_MEMBER_ImagePath "ImagePath"
 #define OT_JSON_MEMBER_ColorMask "ColorMask"
 #define OT_JSON_MEMBER_MaintainAspectRatio "MaintainAspectRatio"
 
-static ot::SimpleFactoryRegistrar<ot::GraphicsImageItemCfg> imageItemCfg(OT_SimpleFactoryJsonKeyValue_GraphicsImageItemCfg);
+static ot::GraphicsItemCfgFactoryRegistrar<ot::GraphicsImageItemCfg> imageItemCfg(OT_FactoryKey_GraphicsImageItem);
 
 ot::GraphicsImageItemCfg::GraphicsImageItemCfg(const std::string& _imageSubPath)
-	: m_imageSubPath(_imageSubPath), m_maintainAspectRatio(false), m_colorMask(-1.f, -1.f, -1.f, -1.f)
+	: m_imageSubPath(_imageSubPath), m_maintainAspectRatio(false), m_colorMask(-255, -255, -255, -255)
 {}
 
 ot::GraphicsImageItemCfg::~GraphicsImageItemCfg() {}
+
+ot::GraphicsItemCfg* ot::GraphicsImageItemCfg::createCopy(void) const {
+	ot::GraphicsImageItemCfg* copy = new GraphicsImageItemCfg;
+	this->setupData(copy);
+
+	copy->m_imageSubPath = m_imageSubPath;
+	copy->m_maintainAspectRatio = m_maintainAspectRatio;
+	copy->m_colorMask = m_colorMask;
+
+	return copy;
+}
 
 void ot::GraphicsImageItemCfg::addToJsonObject(JsonValue& _object, JsonAllocator& _allocator) const {
 	GraphicsItemCfg::addToJsonObject(_object, _allocator);

@@ -9,7 +9,6 @@
 #include "OTWidgets/GraphicsView.h"
 #include "OTWidgets/GraphicsScene.h"
 #include "OTWidgets/GraphicsItem.h"
-#include "OTWidgets/GraphicsFactory.h"
 #include "OTWidgets/GraphicsConnectionItem.h"
 #include "OTWidgets/GraphicsItemPreviewDrag.h"
 
@@ -19,8 +18,11 @@
 #include <QtWidgets/qscrollbar.h>
 #include <QtWidgets/qgraphicsproxywidget.h>
 
-ot::GraphicsView::GraphicsView() : m_isPressed(false), m_wheelEnabled(true), m_dropEnabled(false), m_stateChangeInProgress(false) {
-	m_scene = new GraphicsScene(this);
+ot::GraphicsView::GraphicsView(GraphicsScene* _scene) 
+	: m_scene(_scene), m_isPressed(false), m_wheelEnabled(true), m_dropEnabled(false), m_stateChangeInProgress(false) 
+{
+	if (!m_scene) m_scene = new GraphicsScene(this);
+
 	this->setScene(m_scene);
 	this->setDragMode(QGraphicsView::DragMode::RubberBandDrag);
 	this->setAlignment(Qt::AlignAbsolute);
@@ -67,6 +69,14 @@ void ot::GraphicsView::viewAll(void) {
 	{
 		resetView();
 	}
+}
+
+void ot::GraphicsView::setGraphicsScene(GraphicsScene* _scene) {
+	if (_scene == m_scene) return;
+	if (!_scene) return;
+	if (m_scene) delete m_scene;
+	m_scene = _scene;
+	this->setScene(_scene);
 }
 
 ot::GraphicsItem* ot::GraphicsView::getItem(const ot::UID&  _itemUid) {
