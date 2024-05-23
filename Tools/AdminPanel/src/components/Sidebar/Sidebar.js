@@ -88,12 +88,60 @@ export const Sidebar = (props) => {
       </div>
     </div>
   );
+  // Author: Paul, Admin Dashboard
+  const dashboardPageListItems = (
+    <div className="sidebar">
+      <div className="top"></div>
+      <div className="center">
+        <br />
+        <ul style={{ marginRight: "1em" }}>
+          <p className="title">Dashboard Actions</p>
+
+          <div className="card">
+            <div className="card-header">
+              Global Session Service
+            </div>
+            <div className="card-body">
+              <ul>
+                <li>Status: online <div className="status-indicator"></div></li>
+                <li>Address: 127.0.0.1</li>
+              </ul>
+            </div>
+          </div>
+          <div className="card" style={{ marginTop: "0.8em" }}>
+            <div className="card-header">
+              Global Direcotry Service
+            </div>
+            <div className="card-body">
+              <ul>
+                <li>Status: online <div className="status-indicator"></div></li>
+                <li>Address: 127.0.0.1</li>
+              </ul>
+            </div>
+          </div>
+          <div className="card" style={{ marginTop: "0.8em" }}>
+            <div className="card-header">
+              Authentication Service
+            </div>
+            <div className="card-body">
+              <ul>
+                <li>Status: online <div className="status-indicator"></div></li>
+                <li>Address: 127.0.0.1</li>
+              </ul>
+            </div>
+          </div>
+        </ul>
+      </div>
+    </div>
+  );
 
   let items;
   if (props.items === "user") {
     items = userPageListItems;
   } else if (props.items === "group") {
     items = groupPageListItems;
+  } else if (props.items === "dashboard") {
+    items = dashboardPageListItems;
   } else {
     items = projectPageListItems;
   }

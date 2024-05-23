@@ -1,0 +1,45 @@
+.dashboardPage {
+    display: flex;
+    width: 100%;
+
+    .listContainer {
+        margin-top: 5%;
+        flex: 6;
+    }
+
+    .dashboardContainer {
+        display: grid;
+        grid-template-columns: auto auto;
+        // border: 0.3em solid #367cd2;
+        border-radius: 0.6em;
+    }
+
+    .inner-gird-container {
+        display: grid;
+        grid-template-columns: auto auto;
+    }
+
+    .card-body>ul>li {
+        list-style-type: none;
+    }
+
+    .status-indicator {
+        display: inline-block;
+        width: 0.8rem;
+        height: 0.8rem;
+        border: 0;
+        border-radius: 50%;
+        background-color: #00ff00;
+        filter: brightness(1.2);
+    }
+
+    .gss-icon {
+        height: 5em;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .gss-icon:hover {
+        transform: scale(1.2);
+        filter: brightness(1.2);
+    }
+}

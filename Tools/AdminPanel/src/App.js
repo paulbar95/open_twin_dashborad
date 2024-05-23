@@ -6,6 +6,9 @@ import LoginPage from "./screens/LoginPage/LoginPage";
 
 import LandingPage from "./screens/LandingPage/LandingPage";
 
+// Author: Paul, Admin Dashboard
+import DashboardPage from "./screens/DashboardPage/DashboardPage";
+
 import UserPage from "./screens/UserPage/UserPage";
 import CreateNewUser from "./screens/UserPage/CreateNewUser";
 import ChangeUserUsername from "./screens/UserPage/ChangeUsername";
@@ -50,6 +53,10 @@ function App() {
               ></Route>
               {isLoggedIn && (
                 <Route path="landingPage" element={<LandingPage />}></Route>
+              )}
+              {/* Author: Paul, Admin Dashboard */}
+              {isLoggedIn && (
+                <Route path="dashboard" element={<DashboardPage />}></Route>
               )}
               {isLoggedIn && (
                 <Route path="users">
