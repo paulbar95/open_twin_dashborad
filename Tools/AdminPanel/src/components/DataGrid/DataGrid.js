@@ -13,7 +13,7 @@ import GetAllProjectCount from "../../services/api/AuthorisationService/ProjectA
 
 import QuickFilter from "../QuickFilter/QuickFilter";
 
-const DataGrid = ({ list, columnHeader, ...props }) => {
+const DataGrid = ({ list, columnHeader, title, handleOpenModal, ...props }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { setUserDetails } = useContext(UserContext);
@@ -21,56 +21,44 @@ const DataGrid = ({ list, columnHeader, ...props }) => {
   const [showAlert, setShowAlert] = useState("");
 
   useEffect(() => {
-    GetAllProjectCount()
-      .then((response) => {
-        const number = response;
-        if (number > 6) {
-          setShowAlert(t("dataGrid:projectLisAlert"));
-        }
-      })
-      .catch((response) => {
-        console.log("GetAllProjectCount", response.description);
-        navigate("/error");
-      });
-  }, [navigate, t]);
+    if (title === "Projects") {
+      GetAllProjectCount()
+        .then((response) => {
+          const number = response;
+          if (number > 6) {
+            setShowAlert(t("dataGrid:projectLisAlert"));
+          }
+        })
+        .catch((response) => {
+          console.log("GetAllProjectCount", response.description);
+          navigate("/error");
+        });
+    }
+  }, [navigate, t, title]);
 
   const actionUserColumn = [
     {
       field: "action",
       headerName: "Change Actions",
       width: 200,
-      renderCell: (rowData) => {
-        return (
-          <>
-            <div className="cellAction">
-              <Link
-                to="/users/changeUsername"
-                style={{ textDecoration: "none" }}
-              >
-                <Button
-                  size="small"
-                  onClick={() => setUserDetails(rowData.row.username)}
-                >
-                  {t("dataGrid:changeUsernameButton")}
-                </Button>
-              </Link>
-            </div>
-            <div className="cellAction">
-              <Link
-                to="/users/changePassword"
-                style={{ textDecoration: "none" }}
-              >
-                <Button
-                  size="small"
-                  onClick={() => setUserDetails(rowData.row.username)}
-                >
-                  {t("dataGrid:changePasswordButton")}
-                </Button>
-              </Link>
-            </div>
-          </>
-        );
-      },
+      renderCell: (rowData) => (
+        <>
+          <div className="cellAction">
+            <Link to="/users/changeUsername" style={{ textDecoration: "none" }}>
+              <Button size="small" onClick={() => setUserDetails(rowData.row.username)}>
+                {t("dataGrid:changeUsernameButton")}
+              </Button>
+            </Link>
+          </div>
+          <div className="cellAction">
+            <Link to="/users/changePassword" style={{ textDecoration: "none" }}>
+              <Button size="small" onClick={() => setUserDetails(rowData.row.username)}>
+                {t("dataGrid:changePasswordButton")}
+              </Button>
+            </Link>
+          </div>
+        </>
+      ),
     },
   ];
 
@@ -79,20 +67,15 @@ const DataGrid = ({ list, columnHeader, ...props }) => {
       field: "action",
       headerName: "Action",
       width: 200,
-      renderCell: (rowData) => {
-        return (
-          <div className="cellAction">
-            <Link to="/groups/ChangeData" style={{ textDecoration: "none" }}>
-              <Button
-                size="small"
-                onClick={() => setUserDetails(rowData.row.groupName)}
-              >
-                {t("dataGrid:changeGroupName")}
-              </Button>
-            </Link>
-          </div>
-        );
-      },
+      renderCell: (rowData) => (
+        <div className="cellAction">
+          <Link to="/groups/ChangeData" style={{ textDecoration: "none" }}>
+            <Button size="small" onClick={() => setUserDetails(rowData.row.groupName)}>
+              {t("dataGrid:changeGroupName")}
+            </Button>
+          </Link>
+        </div>
+      ),
     },
   ];
 
@@ -101,29 +84,43 @@ const DataGrid = ({ list, columnHeader, ...props }) => {
       field: "action",
       headerName: "Action",
       width: 200,
-      renderCell: (rowData) => {
-        return (
-          <div className="cellAction">
-            <Link to="/projects/ChangeData" style={{ textDecoration: "none" }}>
-              <Button
-                size="small"
-                onClick={() => setUserDetails(rowData.row.name)}
-              >
-                {t("dataGrid:changeProjectName")}
-              </Button>
-            </Link>
-          </div>
-        );
-      },
+      renderCell: (rowData) => (
+        <div className="cellAction">
+          <Link to="/projects/ChangeData" style={{ textDecoration: "none" }}>
+            <Button size="small" onClick={() => setUserDetails(rowData.row.name)}>
+              {t("dataGrid:changeProjectName")}
+            </Button>
+          </Link>
+        </div>
+      ),
+    },
+  ];
+
+  const actionLocalDirectoryServiceColumn = [
+    {
+      field: "action",
+      headerName: "Action",
+      width: 200,
+      renderCell: (rowData) => (
+        <div className="cellAction">
+          <Button size="small" variant="outlined" onClick={() => handleOpenModal(rowData.row.localSessionServices)}>
+            View Services
+          </Button>
+        </div>
+      ),
     },
   ];
 
   const actionColum =
-    props.title === "Users"
+    title === "Users"
       ? columnHeader.concat(actionUserColumn)
-      : props.title === "Groups"
-      ? columnHeader.concat(actionGroupColumn)
-      : columnHeader.concat(actionProjectColumn);
+      : title === "Groups"
+        ? columnHeader.concat(actionGroupColumn)
+        : title === "Projects"
+          ? columnHeader.concat(actionProjectColumn)
+          : title === "Local Directory Services"
+            ? columnHeader.concat(actionLocalDirectoryServiceColumn)
+            : columnHeader;
 
   var arrIds = [];
   const setArrIds = (ids) => {
@@ -148,29 +145,35 @@ const DataGrid = ({ list, columnHeader, ...props }) => {
   );
   const classes = useStyles();
 
+  console.log("pageSize:", props.pageSize); // Hinzugefügt für Debugging
+  console.log("pageSize:", props.rowsPerPageOptions); // Hinzugefügt für Debugging
+  const [paginationModel, setPaginationModel] = React.useState({
+    pageSize: 10,
+    page: 0,
+  });
   return (
     <div className="dataGrid">
       <div className="dataGridTitle">
         {props.title}
         {props.children}
       </div>
-      {props.title === "Projects" ? (
+      {title === "Projects" && (
         <>
           <QuickFilter input={props.input} handleFilter={props.handleFilter} />
           {props.numberOfProject >= 10 && (
             <Alert severity="info">{showAlert}</Alert>
           )}
         </>
-      ) : (
-        ""
       )}
       <MuiDataGrid
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
         className={classes.root}
         rows={list}
         rowHeight={50}
         columns={actionColum}
-        pageSize={50}
-        rowsPerPageOptions={[50]}
+        pageSize={10}
+        pageSizeOptions={[10, 15, 50, 100]}
         checkboxSelection
         onSelectionModelChange={(ids) => {
           setArrIds(ids);

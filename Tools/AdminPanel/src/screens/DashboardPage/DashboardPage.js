@@ -1,77 +1,69 @@
 import './DashboardPage.scss';
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "../../components/Navbar/Navbar";
-import Sidebar from "../../components/Sidebar/Sidebar";
-import LocalSessionServices from "./LocalSessionServices/LocalSessionServices";
-import LocalDirectoryServices from "./LocalDirectoryServices/LocalDirectoryServices";
-import hubIcon from "../../resources/icons/hub-icon.png";
+import DataProvider from './DataProvider';
+import GlobalServices from './GlobalServices';
+import LocalServiceModal from './LocalServiceModal';
 
 const Dashboard = () => {
-    const localSessionServicesData = [
-        {
-            sessions: [
-                { user: 'User1', accessedLDS: ['LDS #1', 'LDS #2'] },
-                { user: 'User2', accessedLDS: ['LDS #1', 'LDS #3'] }
-            ]
-        },
-        {
-            sessions: [
-                { user: 'User3', accessedLDS: ['LDS #1', 'LDS #2'] },
-                { user: 'User4', accessedLDS: ['LDS #1', 'LDS #3'] },
-                { user: 'User5', accessedLDS: ['LDS #2', 'LDS #3'] }
-            ]
-        }
-    ];
+    const [loading, setLoading] = useState(true);
+    const [localServiceModalIsOpen, setLocalServiceModalIsOpen] = useState(false);
+    const [modalContent, setModalContent] = useState(null);
+    const [serviceDetails, setServiceDetails] = useState(null);
 
-    const localDirectoryServicesData = [
-        {
-            name: 'Local Directory Service #1',
-            cpuUsage: '10%',
-            memoryUsage: '20%',
-            localServices: [
-                { name: 'Service #1' },
-                { name: 'Service #2' }
-            ]
-        },
-        {
-            name: 'Local Directory Service #2',
-            cpuUsage: '15%',
-            memoryUsage: '25%',
-            localServices: [
-                { name: 'Service #1' },
-                { name: 'Service #2' }
-            ]
-        },
-        {
-            name: 'Local Directory Service #3',
-            cpuUsage: '20%',
-            memoryUsage: '30%',
-            localServices: [
-                { name: 'Service #1' },
-                { name: 'Service #2' }
-            ]
-        }
-    ];
+    useEffect(() => {
+        const fetchData = async () => {
+            await DataProvider.initialize();
+            setLoading(false);
+            console.log("Data: ", DataProvider["Global.CPU.Load"])
+        };
+
+        fetchData();
+    }, []);
+
+    const openLocalServiceModal = async (url) => {
+        console.log("openLocalServiceModal called with URL:", url);
+        let localServiceData = await DataProvider.getInformation(url);
+        setModalContent(localServiceData);
+        setLocalServiceModalIsOpen(true);
+    };
+
+    const closeLocalServiceModal = () => {
+        setLocalServiceModalIsOpen(false);
+        setModalContent(null);
+        setServiceDetails(null);
+    };
+
+    const fetchServiceDetails = async (url) => {
+        const details = await DataProvider.getInformation(url);
+        setServiceDetails(details);
+    };
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
     return (
-        <div className="dashboardPage">
-            <Sidebar items="dashboard" />
-            <div className="listContainer">
+        < div className="dashboardPage" >
+            <div className="listContainer container">
                 <Navbar />
                 <h2>Dashboard</h2>
                 <div className="dashboardContainer">
-                    <div className="grid-item">
-                        <LocalSessionServices services={localSessionServicesData} />
-                    </div>
-                    <div className="grid-item">
-                        <LocalDirectoryServices localDirectoryServices={localDirectoryServicesData} />
-                    </div>
-                    <div className="grid-item">
-                        <img className="gss-icon" src={hubIcon} alt="Hub Icon" />
-                    </div>
+                    <GlobalServices
+                        dataProvider={DataProvider}
+                        openLocalServiceModal={openLocalServiceModal}
+                    />
                 </div>
             </div>
-        </div>
+
+            <LocalServiceModal
+                isOpen={localServiceModalIsOpen}
+                onRequestClose={closeLocalServiceModal}
+                modalContent={modalContent}
+                fetchServiceDetails={fetchServiceDetails}
+                serviceDetails={serviceDetails}
+            />
+        </div >
     );
 };
 

@@ -22,6 +22,7 @@ export function setUserData(username, password) {
 }
 
 export function setSessionServiceData(sessionservice) {
+  console.log("sessionservice", sessionservice);
   sessionStorage.setItem("sessionservice", JSON.stringify(sessionservice));
 }
 
@@ -57,26 +58,26 @@ const LoginPage = (props) => {
 
     // Get the authorization service address from the global session service
     GetAuthServiceAddress().then((address) => {
-      if (typeof address === "undefined")
-      {
-          setServerErrPopup(true);
+      if (typeof address === "undefined") {
+        setServerErrPopup(true);
       }
-      else
-      {
-          sessionStorage.setItem("authServiceAddress", address);
+      else {
+        sessionStorage.setItem("authServiceAddress", address);
 
-          // Check the admin user credentials
-          AuthenticateAdmin({ enteredUsername, enteredPassword }).then((data) => {
-            if (data.successful === true) {
-              setIsSubmitted(true);
-              props.setLoggedIn(true);
-              props.setToken(true);
-            } else if (data.successful === false) {
-              setErrorMessages({ name: "unameOrPassword", message: error });
-            } else {
-              setServerErrPopup(true);
-            }
-          });
+        // Check the admin user credentials
+        AuthenticateAdmin({ enteredUsername, enteredPassword }).then((data) => {
+          if (data.successful === true) {
+            setIsSubmitted(true);
+            props.setLoggedIn(true);
+            props.setToken(true);
+            console.log("Login successful");
+            console.log(data, address);
+          } else if (data.successful === false) {
+            setErrorMessages({ name: "unameOrPassword", message: error });
+          } else {
+            setServerErrPopup(true);
+          }
+        });
       }
     });
   };

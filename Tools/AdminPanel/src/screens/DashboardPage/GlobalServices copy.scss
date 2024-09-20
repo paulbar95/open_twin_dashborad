@@ -1,0 +1,58 @@
+$primary-color: #3498db;
+$secondary-color: #2ecc71;
+$box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+
+
+.usage-icon {
+    grid-row: span 2;
+    /* Make the icon span two rows */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: 40% 1fr;
+    gap: 20px;
+
+    .grid-item {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: $box-shadow;
+
+        h3 {
+            margin-top: 0;
+            text-align: center;
+            color: $secondary-color;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+
+            li {
+                // margin: 10px 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+
+                button {
+                    background-color: $primary-color;
+                    color: white;
+                    border: none;
+                    // padding: 5px 10px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    transition: background-color 0.3s;
+
+                    &:hover {
+                        background-color: darken($primary-color, 10%);
+                    }
+                }
+            }
+        }
+    }
+}

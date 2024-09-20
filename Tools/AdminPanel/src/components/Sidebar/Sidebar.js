@@ -1,5 +1,6 @@
 import "./sidebar.scss";
-import React from "react";
+// import React from "react";
+import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -11,6 +12,18 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import GroupRemoveIcon from "@mui/icons-material/GroupRemove";
 
 export const Sidebar = (props) => {
+
+  // Author: Paul, Admin Dashboard
+  const [authServiceAddress, setAuthServiceAddress] = useState(null);
+
+  useEffect(() => {
+    // Daten aus dem sessionStorage auslesen
+    const address = sessionStorage.getItem('sessionservice');
+    if (address) {
+      setAuthServiceAddress(address.replace(/"/g, ''));
+    }
+  }, []);
+
   const { t } = useTranslation();
 
   const userPageListItems = (
@@ -103,8 +116,13 @@ export const Sidebar = (props) => {
             </div>
             <div className="card-body">
               <ul>
-                <li>Status: online <div className="status-indicator"></div></li>
-                <li>Address: 127.0.0.1</li>
+                <li>
+                  Status:
+                  <div className={`status-indicator ${authServiceAddress ? 'green' : 'red'}`}></div>
+                </li>
+                <li>
+                  Address: {authServiceAddress ? authServiceAddress : 'offline'}
+                </li>
               </ul>
             </div>
           </div>
@@ -140,8 +158,8 @@ export const Sidebar = (props) => {
     items = userPageListItems;
   } else if (props.items === "group") {
     items = groupPageListItems;
-  } else if (props.items === "dashboard") {
-    items = dashboardPageListItems;
+    // } else if (props.items === "dashboard") {
+    //   items = dashboardPageListItems;
   } else {
     items = projectPageListItems;
   }
